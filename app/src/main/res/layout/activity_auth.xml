@@ -5,7 +5,7 @@
     <data>
         <variable
             name="vm"
-            type="com.vladiachuk.kointest.ui.viewLayers.auth.AuthViewModel" />
+            type="com.tarlad.client.ui.viewLayers.auth.AuthViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
