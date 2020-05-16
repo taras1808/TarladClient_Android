@@ -10,11 +10,13 @@ import retrofit2.http.Query
 
 interface UsersApi {
     @GET("api/search")
-    fun getUsers(
+    fun searchUsers(
         @Query("q") q: String,
         @Query("user_id") userId: Long
-    ): Observable<List<User>>
+    ): Single<List<User>>
 
+
+    //TODO ChatApi
     @POST("/pi/chats/create")
     fun createChat(users: List<User>): Single<Chat>
 }

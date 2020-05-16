@@ -59,6 +59,7 @@ class RegisterFragment: Fragment(R.layout.fragment_register) {
             vm.register(
                 edit_email.text.toString(),
                 edit_password.text.toString(),
+                edit_confirm_password.text.toString(),
                 edit_nickname.text.toString(),
                 edit_name.text.toString(),
                 edit_surname.text.toString()

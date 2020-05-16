@@ -42,7 +42,7 @@ class AuthViewModel(
     fun checkEmail(email: String) {
         checkEmailJob = CoroutineScope(Dispatchers.Main).launch {
             registerEmail.value = Register.Loading
-            when (withContext(Dispatchers.IO) { authRepo.checkEmail(email) }){
+            when (val res = withContext(Dispatchers.IO) { authRepo.checkEmail(email) }){
                 is OnComplete -> registerEmail.value = Register.Ok
                 is OnError -> {
                     //TODO check server error
@@ -60,7 +60,7 @@ class AuthViewModel(
     fun checkNickname(nickname: String) {
         checkNicknameJob = CoroutineScope(Dispatchers.Main).launch {
             registerNickname.value = Register.Loading
-            when (withContext(Dispatchers.IO) { authRepo.checkNickname(nickname) }){
+            when (val res = withContext(Dispatchers.IO) { authRepo.checkNickname(nickname) }){
                 is OnComplete -> registerNickname.value = Register.Ok
                 is OnError -> {
                     //TODO check server error
@@ -73,6 +73,7 @@ class AuthViewModel(
     private fun checkRegister(
         email: String,
         password: String,
+        confirmPassword: String,
         nickname: String,
         name: String,
         surname: String
@@ -89,6 +90,16 @@ class AuthViewModel(
 
         if (password.isEmpty()) {
             error.value = "Empty password field"
+            return false
+        }
+
+        if (confirmPassword.isEmpty()) {
+            error.value = "Empty confirm password field"
+            return false
+        }
+
+        if (password != confirmPassword) {
+            error.value = "Password and confirm password not equal"
             return false
         }
 
@@ -109,11 +120,13 @@ class AuthViewModel(
         return true
     }
 
-    fun register(email: String, password: String, nickname: String, name: String, surname: String) {
-        if (!checkRegister(email, password, nickname, name, surname)) return
+    fun register(email: String, password: String, confirmPassword: String, nickname: String, name: String, surname: String) {
+        if (!checkRegister(email, password, confirmPassword, nickname, name, surname)) return
         progressVisibility.value = View.VISIBLE
         CoroutineScope(Dispatchers.Main).launch {
-            when (val res = withContext(Dispatchers.IO) { authRepo.register(User(null, email, password, nickname, name, surname, null)) }){
+            when (val res = withContext(Dispatchers.IO) {
+                authRepo.register(User(-1, email, password, nickname, name, surname, null))
+            }){
                 is OnComplete -> saveToken(res.data)
                 is OnError -> error.value = res.t.toString()
             }

@@ -38,6 +38,7 @@ class MainViewModel(val appSession: AppSession, private val mainRepo: MainRepo, 
                 is OnError -> {
                     when (res.t) {
                         is ConnectException -> {
+                            //TODO Don`t use this token while not validate
                             appSession.token = token
                         }
                         else -> {

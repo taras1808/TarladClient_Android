@@ -24,7 +24,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.tarlad.client.ui.views.addChat.AddChatActivity" />
+        <activity android:name="com.tarlad.client.ui.views.addChat.AddChatActivity"
+            android:parentActivityName=".ui.views.main.MainActivity"/>
 
         <activity android:name="com.tarlad.client.ui.views.auth.AuthActivity" />
 

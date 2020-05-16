@@ -19,4 +19,5 @@
     <color name="editText">#999999</color>
     <color name="black">#000000</color>
     <color name="ripple">#AAAAAA</color>
+    <color name="rippleItem">#DDDDDD</color>
 </resources>
