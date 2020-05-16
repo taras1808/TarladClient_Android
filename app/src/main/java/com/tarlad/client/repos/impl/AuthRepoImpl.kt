@@ -1,48 +1,39 @@
 package com.tarlad.client.repos.impl
 
-import com.tarlad.client.AppDatabase
 import com.tarlad.client.api.AuthApi
-import com.tarlad.client.helpers.Preferences
+import com.tarlad.client.dao.TokenDao
+import com.tarlad.client.helpers.*
 import com.tarlad.client.models.LoginInfo
 import com.tarlad.client.models.Token
 import com.tarlad.client.models.User
 import com.tarlad.client.repos.AuthRepo
-import io.reactivex.rxjava3.core.Observable
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
-class AuthRepoImpl(val prefs: Preferences, val db: AppDatabase, val authApi: AuthApi) : AuthRepo {
+class AuthRepoImpl(private val tokenDao: TokenDao, private val authApi: AuthApi) : AuthRepo {
 
-    //return true when email exists
-    override suspend fun checkEmail(email: String): Boolean {
-        return suspendCoroutine {
-            authApi.checkEmail(email).enqueue(object : Callback<Unit> {
-                override fun onFailure(call: Call<Unit>, t: Throwable) {
-                    it.resume(true)
-                }
+    override suspend fun checkEmail(email: String): TarladResult<Unit>
+            = authApi.checkEmail(email).toCoroutine()
 
-                override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-                    if (response.code() == 200) {
-                        it.resume(false)
-                    } else {
-                        it.resume(true)
-                    }
-                }
-            })
-        }
-    }
+    override suspend fun checkNickname(nickname: String): TarladResult<Unit>
+            = authApi.checkNickname(nickname).toCoroutine()
 
-    override fun register(user: User): Observable<Token> = authApi.register(user)
+    override suspend fun register(user: User): TarladResult<Token>
+            = authApi.register(user).toCoroutine()
 
-    override fun saveToken(token: Token) {
-        prefs.token = token.token
-        prefs.idUser = token.idUser
-    }
+    override suspend fun login(loginInfo: LoginInfo): TarladResult<Token>
+            = authApi.login(loginInfo).toCoroutine()
 
-    override fun loginWithToken(token: Token): Observable<Token> = authApi.loginWithToken(token)
+    override suspend fun loginWithToken(token: Token): TarladResult<Token>
+            = authApi.loginWithToken(token).toCoroutine()
 
-    override fun login(loginInfo: LoginInfo): Observable<Token> = authApi.login(loginInfo)
+    override suspend fun logout(token: Token): TarladResult<Unit>
+            = authApi.logout(token).toCoroutine()
+
+    override suspend fun saveToken(token: Token)
+            = tokenDao.insert(token)
+
+    override suspend fun removeToken(token: Token)
+            = tokenDao.delete(token)
+
+    override suspend fun getToken(): Token?
+            = tokenDao.getToken()
 }

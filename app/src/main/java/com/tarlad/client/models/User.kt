@@ -1,15 +1,18 @@
 package com.tarlad.client.models
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
 data class User(
     @PrimaryKey
-    var idUser: Int = 0,
-    var name: String = "",
-    var surname: String = "",
+    var id: Int?,
     var email: String = "",
     var password: String = "",
-    var avatar: String? = null
+    var nickname: String = "",
+    var name: String = "",
+    var surname: String = "",
+    @ColumnInfo(name = "image_url")
+    var imageURL: String? = null
 )

@@ -1,38 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical">
 
     <EditText
         android:id="@+id/edit_email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/edit_text"
         android:ems="10"
         android:hint="Email"
         android:inputType="textEmailAddress"
-        android:layout_marginTop="24dp"/>
+        android:textColor="@color/black"
+        android:textColorHint="@color/editText" />
 
     <EditText
         android:id="@+id/edit_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/edit_text"
         android:ems="10"
+        android:hint="Password"
         android:inputType="textPassword"
-        android:layout_marginTop="24dp"
-        android:hint="Password"/>
-
-    <TextView
-        android:id="@+id/register_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Register"
-        android:textSize="24sp"
-        android:layout_marginTop="24dp"/>
+        android:textColor="@color/black"
+        android:textColorHint="@color/editText" />
 
     <Button
         android:id="@+id/login_btn"
+        style="?android:attr/borderlessButtonStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/button"
         android:text="Login"
-        android:layout_marginTop="24dp" />
+        android:textColor="@color/black" />
+
+    <TextView
+        android:id="@+id/register_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Registration"
+        android:textAlignment="center"
+        android:textColor="@color/blue"
+        android:textSize="18sp" />
+
 </LinearLayout>

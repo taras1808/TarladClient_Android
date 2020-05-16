@@ -1,4 +1,4 @@
-package com.tarlad.client.ui.viewLayers.main
+package com.tarlad.client.ui.views.main
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -9,9 +9,8 @@ import android.view.MenuItem
 import androidx.lifecycle.Observer
 import com.tarlad.client.R
 import com.tarlad.client.states.AppStates
-import com.tarlad.client.ui.viewLayers.addChat.AddChatActivity
-import com.tarlad.client.ui.viewLayers.auth.AuthActivity
-import kotlinx.android.synthetic.main.activity_main.*
+import com.tarlad.client.ui.views.addChat.AddChatActivity
+import com.tarlad.client.ui.views.auth.AuthActivity
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -23,9 +22,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        text_token.text = vm.token!!.token
-
         observeAppState()
+
+        vm.tryLoginWithToken()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -45,7 +44,9 @@ class MainActivity : AppCompatActivity() {
     private fun observeAppState() {
         vm.appSession.state.observe(this, Observer {
             if (it == AppStates.NotAuthenticated) {
-                startActivity(Intent(this , AuthActivity::class.java))
+                val intent = Intent(this , AuthActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK + Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
             }
         })
     }

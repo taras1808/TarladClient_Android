@@ -5,6 +5,6 @@ import com.tarlad.client.models.Token
 import com.tarlad.client.states.AppStates
 
 class AppSession {
-    val state = MutableLiveData<AppStates>(AppStates.NotAuthenticated)
+    val state = MutableLiveData<AppStates>(AppStates.Authenticated)
     var token: Token? = null
 }

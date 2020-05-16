@@ -11,7 +11,7 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
     defaultConfig {
-        applicationId "com.vladiachuk.kointest"
+        applicationId "com.tarlad.client"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
@@ -47,7 +47,7 @@ dependencies {
     implementation 'com.android.support:support-v4:29.0.2'
     implementation 'com.android.support:recyclerview-v7:29.0.2'
 
-    def koin_version = '2.1.4'
+    def koin_version = '2.1.5'
     implementation "org.koin:koin-android:$koin_version"
     implementation "org.koin:koin-androidx-scope:$koin_version"
     implementation "org.koin:koin-androidx-viewmodel:$koin_version"
@@ -63,14 +63,14 @@ dependencies {
     implementation 'io.reactivex.rxjava3:rxjava:3.0.0'
 
 
-    implementation 'com.squareup.retrofit2:retrofit:2.7.2'
-    implementation 'com.squareup.retrofit2:converter-gson:2.7.2'
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.4.1'
-    implementation 'com.squareup.retrofit2:converter-scalars:2.7.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.8.1'
+    implementation 'com.squareup.retrofit2:converter-gson:2.8.1'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.5.0'
+    implementation 'com.squareup.retrofit2:converter-scalars:2.8.1'
     implementation "com.github.akarnokd:rxjava3-retrofit-adapter:3.0.0"
 
 
-    def room_version = "2.2.4"
+    def room_version = '2.2.5'
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"

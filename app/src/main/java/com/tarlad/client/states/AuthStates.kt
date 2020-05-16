@@ -4,6 +4,6 @@ enum class AuthState {
     Login, Register, ForgetPass
 }
 
-enum class RegisterEmail {
+enum class Register {
     Empty, Ok, Error, Loading
 }

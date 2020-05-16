@@ -4,8 +4,8 @@ import com.tarlad.client.AppDatabase
 import com.tarlad.client.api.UsersApi
 import com.tarlad.client.repos.UsersRepo
 import com.tarlad.client.repos.impl.UsersRepoImpl
-import com.tarlad.client.ui.viewLayers.addChat.AddChatActivity
-import com.tarlad.client.ui.viewLayers.addChat.AddChatViewModel
+import com.tarlad.client.ui.views.addChat.AddChatActivity
+import com.tarlad.client.ui.views.addChat.AddChatViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.scope.ScopeID
 import org.koin.dsl.module

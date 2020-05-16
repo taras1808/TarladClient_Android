@@ -1,4 +1,4 @@
-package com.tarlad.client.ui.viewLayers.addChat
+package com.tarlad.client.ui.views.addChat
 
 import android.graphics.Color
 import android.os.Bundle

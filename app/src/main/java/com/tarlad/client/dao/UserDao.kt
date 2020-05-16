@@ -5,10 +5,11 @@ import com.tarlad.client.models.User
 
 @Dao
 interface UserDao {
+
     @Query("SELECT * FROM user")
     fun getAll(): List<User>
 
-    @Query("SELECT * FROM user WHERE idUser IN (:userIds)")
+    @Query("SELECT * FROM user WHERE id IN (:userIds)")
     fun loadAllByIds(userIds: IntArray): List<User>
 
     @Insert

@@ -1,3 +1,3 @@
 package com.tarlad.client.models
 
-data class Chat(val idChat: Int, val chatName: String)
+data class Chat(val id: Int, val title: String)

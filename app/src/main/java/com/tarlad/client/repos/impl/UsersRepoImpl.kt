@@ -13,7 +13,7 @@ class UsersRepoImpl(private val dbUsers: UserDao, private val usersApi: UsersApi
         return Observable.create { emitter ->
             val cache = dbUsers.getAll()
             emitter.onNext(cache)
-            usersApi.getUsers()
+            usersApi.getUsers("",0)
                 .subscribe(
                     { net ->
                         if (net != null && cache.size != net.size || !cache.containsAll(net)) {

@@ -1,11 +1,11 @@
-package com.tarlad.client.ui.viewLayers.auth.fragments
+package com.tarlad.client.ui.views.auth.fragments
 
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import com.tarlad.client.R
 import com.tarlad.client.states.AuthState
-import com.tarlad.client.ui.viewLayers.auth.AuthViewModel
+import com.tarlad.client.ui.views.auth.AuthViewModel
 import kotlinx.android.synthetic.main.fragment_login.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
