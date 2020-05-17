@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class User(
     @PrimaryKey
-    var id: Int,
+    var id: Long,
     @Ignore
     var email: String? = null,
     @Ignore
@@ -20,7 +20,7 @@ data class User(
     var imageURL: String? = null
 ){
     constructor(
-        id: Int,
+        id: Long,
         nickname: String,
         name: String,
         surname: String,

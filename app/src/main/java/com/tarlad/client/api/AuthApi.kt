@@ -3,9 +3,7 @@ package com.tarlad.client.api
 import com.tarlad.client.models.LoginInfo
 import com.tarlad.client.models.Token
 import com.tarlad.client.models.User
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
-import retrofit2.Call
 import retrofit2.http.*
 
 interface AuthApi {

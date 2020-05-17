@@ -1,19 +1,17 @@
 package com.tarlad.client.ui.views.addChat
 
+import android.content.Intent
 import android.graphics.Color
-import android.graphics.ColorFilter
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.tarlad.client.R
-import com.tarlad.client.models.User
+import com.tarlad.client.ui.views.chat.ChatActivity
 import kotlinx.android.synthetic.main.activity_add_chat.*
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -32,6 +30,7 @@ class AddChatActivity : AppCompatActivity() {
 //        observeRefreshing()
         observeError()
         observeUsers()
+        observeOpenChat()
 
         recycler.adapter = adapter
 
@@ -58,15 +57,9 @@ class AddChatActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
-            R.id.add_chat_ok -> onDone()
+            R.id.add_chat_ok -> vm.createChat(adapter.selected)
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    private fun onDone() {
-//        vm.createChat(adapter.selected)
-        //TODO
-        onBackPressed()
     }
 
     private fun observeUsers() {
@@ -74,6 +67,17 @@ class AddChatActivity : AppCompatActivity() {
             adapter.data.clear()
             adapter.data.addAll(it)
             adapter.notifyDataSetChanged()
+        })
+    }
+
+    private fun observeOpenChat() {
+        vm.openChat.observe(this , Observer {
+            if (it != null) {
+                val intent = Intent(this, ChatActivity::class.java)
+                intent.putExtra("ID", it.id)
+                startActivity(intent)
+                finish()
+            }
         })
     }
 

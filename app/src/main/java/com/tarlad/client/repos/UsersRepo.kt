@@ -7,5 +7,4 @@ import io.reactivex.rxjava3.core.Single
 
 interface UsersRepo {
     fun searchUsers(q: String, userId: Long): Observable<List<User>>
-    fun createChat(users: List<User>): Single<Chat>
 }

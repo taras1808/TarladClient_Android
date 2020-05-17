@@ -12,6 +12,7 @@
     <color name="colorError">#FF6464</color>
 
     <color name="blue">#6D8DCC</color>
+    <color name="blue_pressed">#8EADE8</color>
 
 
     <color name="windowBackground">#F9F9F9</color>

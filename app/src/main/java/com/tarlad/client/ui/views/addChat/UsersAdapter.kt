@@ -11,16 +11,16 @@ import kotlinx.android.synthetic.main.add_chat_item.view.*
 
 class UsersAdapter(val data: ArrayList<User>) : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
 
-    val selected = ArrayList<User>()
+    val selected = ArrayList<Long>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.add_chat_item, parent, false)
         return UserViewHolder(view) {user, isChecked ->
             if (user != null) {
                 if(isChecked)
-                    selected.add(user)
+                    selected.add(user.id)
                 else
-                    selected.remove(user)
+                    selected.remove(user.id)
             }
         }
     }
@@ -30,7 +30,7 @@ class UsersAdapter(val data: ArrayList<User>) : RecyclerView.Adapter<UsersAdapte
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
         val user = data[position]
         holder.user = user
-        holder.itemView.check_box.isChecked = selected.contains(user)
+        holder.itemView.check_box.isChecked = selected.contains(user.id)
     }
 
     class UserViewHolder(val view: View, listener: (user: User?, isChecked: Boolean) -> Unit): RecyclerView.ViewHolder(view) {
