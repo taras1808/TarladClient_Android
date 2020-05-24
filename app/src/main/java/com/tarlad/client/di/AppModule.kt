@@ -27,7 +27,7 @@ val appModule = module {
 
     single {
         Retrofit.Builder()
-            .baseUrl("http://192.168.0.108:8080/")
+            .baseUrl("http://192.168.1.18:8080/")
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
             .build()
@@ -52,7 +52,7 @@ val appModule = module {
     single<AuthRepo> { AuthRepoImpl(get(), get()) }
     single<UsersRepo> { UsersRepoImpl(get(), get()) }
     single<ChatsRepo> { ChatsRepoImpl(get()) }
-    single<MessagesRepo> { MessagesRepoImpl(get()) }
+    single<MessagesRepo> { MessagesRepoImpl(get(), get()) }
 
     single { get<Retrofit>().create(AuthApi::class.java) }
     single { get<Retrofit>().create(ChatsApi::class.java) }

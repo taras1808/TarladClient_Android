@@ -18,6 +18,11 @@ fun <T>Single<T>.ioMain(): Single<T> {
         .observeOn(AndroidSchedulers.mainThread())
 }
 
+fun <T>Single<T>.ioIo(): Single<T> {
+    return this.subscribeOn(Schedulers.io())
+        .observeOn(Schedulers.io())
+}
+
 suspend fun <T>Observable<T>.toCoroutine(): TarladResult<T> {
     return suspendCoroutine { emitter ->
         this.subscribe(

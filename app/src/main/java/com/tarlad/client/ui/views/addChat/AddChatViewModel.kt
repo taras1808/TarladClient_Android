@@ -34,7 +34,9 @@ class AddChatViewModel(
         usersRepo.searchUsers(q, appSession.token!!.userId)
             .ioMain()
             .subscribe(
-                { users.value = it },
+                {
+                    println(it)
+                    users.value = it },
                 { error.value = it.toString() }
             )
     }

@@ -5,5 +5,6 @@ import com.tarlad.client.models.*
 import io.reactivex.rxjava3.core.Single
 
 interface MessagesRepo {
-    suspend fun sendMessage(messageCreator: MessageCreator): TarladResult<Message>
+    fun sendMessage(messageCreator: MessageCreator): Single<Message>
+    fun getMessagesForChat(chatId: Long): Single<List<Message>>
 }
