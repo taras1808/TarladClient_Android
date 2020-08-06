@@ -1,10 +1,10 @@
 package com.tarlad.client.repos
 
-import com.tarlad.client.models.Chat
-import com.tarlad.client.models.User
+import com.tarlad.client.models.db.User
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
 
 interface UsersRepo {
-    fun searchUsers(q: String, userId: Long): Observable<List<User>>
+    fun searchUsers(q: String, userId: Long, page: Int): Observable<List<User>>
+    fun searchUsersForChat(token: String, q: String, chatId: Long, page: Int): Observable<List<User>>
+    fun getUsersFromChat(chatId: Long): Observable<List<User>>
 }

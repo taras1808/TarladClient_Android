@@ -23,6 +23,7 @@ val authModule = module {
         AuthViewModel(
             androidApplication(),
             get(),
+            get(),
             get()
         )
     }

@@ -10,13 +10,14 @@ import org.koin.dsl.module
 
 val mainModule = module {
     scope<MainActivity> {
-        scoped<MainRepo> { MainRepoImpl(get()) }
+
     }
 
-    viewModel { (scopeId: ScopeID) ->
+    viewModel {  (scopeId: ScopeID) ->
         MainViewModel(
             get(),
-            getScope(scopeId).get(),
+            get(),
+            get(),
             get()
         )
     }

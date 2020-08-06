@@ -1,8 +1,9 @@
 package com.tarlad.client.api
 
-import com.tarlad.client.models.LoginInfo
-import com.tarlad.client.models.Token
-import com.tarlad.client.models.User
+import com.tarlad.client.models.dto.LoginCredentials
+import com.tarlad.client.models.db.User
+import com.tarlad.client.models.dto.RefreshTokenDTO
+import com.tarlad.client.models.dto.Token
 import io.reactivex.rxjava3.core.Single
 import retrofit2.http.*
 
@@ -18,11 +19,11 @@ interface AuthApi {
     fun register(@Body user: User): Single<Token>
 
     @POST("api/accounts/authorize")
-    fun login(@Body info: LoginInfo): Single<Token>
+    fun login(@Body loginCredentials: LoginCredentials): Single<Token>
 
     @POST("api/accounts/authenticate")
-    fun loginWithToken(@Body token: Token): Single<Token>
+    fun loginWithToken(@Body token: RefreshTokenDTO): Single<Token>
 
     @POST("api/accounts/logout")
-    fun logout(@Body token: Token): Single<Unit>
+    fun logout(@Body token: RefreshTokenDTO): Single<Unit>
 }

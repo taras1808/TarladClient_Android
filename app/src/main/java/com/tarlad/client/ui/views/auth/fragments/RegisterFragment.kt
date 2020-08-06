@@ -15,8 +15,10 @@ import com.tarlad.client.states.Register
 import com.tarlad.client.ui.views.auth.AuthViewModel
 import kotlinx.android.synthetic.main.fragment_register.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import java.util.*
 
 class RegisterFragment: Fragment(R.layout.fragment_register) {
+
     private val vm: AuthViewModel by sharedViewModel()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -27,8 +29,8 @@ class RegisterFragment: Fragment(R.layout.fragment_register) {
 
         edit_email.addTextChangedListener(object: TextWatcher{
             override fun afterTextChanged(s: Editable?) {
-                val email = s.toString()
-                vm.checkEmailJob?.cancel()
+                val email = s.toString().toLowerCase(Locale.getDefault())
+                vm.checkEmailDisposable?.dispose()
                 if (email.isEmpty() || !vm.isEmailMatchRegex(email))
                     vm.registerEmail.value = Register.Empty
                 else
@@ -40,8 +42,8 @@ class RegisterFragment: Fragment(R.layout.fragment_register) {
 
         edit_nickname.addTextChangedListener(object: TextWatcher{
             override fun afterTextChanged(s: Editable?) {
-                val nickname = s.toString()
-                vm.checkNicknameJob?.cancel()
+                val nickname = s.toString().toLowerCase(Locale.getDefault())
+                vm.checkNicknameDisposable?.dispose()
                 if (nickname.isEmpty())
                     vm.registerNickname.value = Register.Empty
                 else

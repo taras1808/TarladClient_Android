@@ -2,38 +2,51 @@ package com.tarlad.client.repos.impl
 
 import com.tarlad.client.api.AuthApi
 import com.tarlad.client.dao.TokenDao
-import com.tarlad.client.helpers.*
-import com.tarlad.client.models.LoginInfo
-import com.tarlad.client.models.Token
-import com.tarlad.client.models.User
+import com.tarlad.client.models.db.RefreshToken
+import com.tarlad.client.models.dto.LoginCredentials
+import com.tarlad.client.models.db.User
+import com.tarlad.client.models.dto.RefreshTokenDTO
+import com.tarlad.client.models.dto.Token
 import com.tarlad.client.repos.AuthRepo
+import io.reactivex.rxjava3.core.Single
+import java.util.concurrent.TimeUnit
 
 class AuthRepoImpl(private val tokenDao: TokenDao, private val authApi: AuthApi) : AuthRepo {
 
-    override suspend fun checkEmail(email: String): TarladResult<Unit>
-            = authApi.checkEmail(email).toCoroutine()
+    override fun checkEmail(email: String): Single<Unit> {
+        return authApi.checkEmail(email)
+    }
 
-    override suspend fun checkNickname(nickname: String): TarladResult<Unit>
-            = authApi.checkNickname(nickname).toCoroutine()
+    override fun checkNickname(nickname: String): Single<Unit> {
+        return authApi.checkNickname(nickname)
+    }
 
-    override suspend fun register(user: User): TarladResult<Token>
-            = authApi.register(user).toCoroutine()
+    override fun register(user: User): Single<Token> {
+        return authApi.register(user)
+    }
 
-    override suspend fun login(loginInfo: LoginInfo): TarladResult<Token>
-            = authApi.login(loginInfo).toCoroutine()
+    override fun login(loginCredentials: LoginCredentials): Single<Token> {
+        return authApi.login(loginCredentials)
+    }
 
-    override suspend fun loginWithToken(token: Token): TarladResult<Token>
-            = authApi.loginWithToken(token).toCoroutine()
+    override fun loginWithToken(token: RefreshTokenDTO): Single<Token> {
+        return authApi.loginWithToken(token)
+    }
 
-    override suspend fun logout(token: Token): TarladResult<Unit>
-            = authApi.logout(token).toCoroutine()
+    override fun logout(token: RefreshTokenDTO): Single<Unit> {
+        return authApi.logout(token)
+    }
 
-    override suspend fun saveToken(token: Token)
-            = tokenDao.insert(token)
+    override fun saveToken(token: RefreshToken) {
+        tokenDao.insert(token)
+    }
 
-    override suspend fun removeToken(token: Token)
-            = tokenDao.delete(token)
+    override fun removeToken(token: RefreshToken) {
+        tokenDao.delete(token)
+    }
 
-    override suspend fun getToken(): Token?
-            = tokenDao.getToken()
+    override fun getToken(): RefreshToken? {
+        return tokenDao.getToken()
+    }
+
 }

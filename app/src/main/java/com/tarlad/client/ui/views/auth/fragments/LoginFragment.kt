@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.fragment_login.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
 class LoginFragment: Fragment(R.layout.fragment_login) {
+
     private val vm: AuthViewModel by sharedViewModel()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

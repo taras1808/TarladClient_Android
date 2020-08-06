@@ -22,21 +22,3 @@ fun <T>Single<T>.ioIo(): Single<T> {
     return this.subscribeOn(Schedulers.io())
         .observeOn(Schedulers.io())
 }
-
-suspend fun <T>Observable<T>.toCoroutine(): TarladResult<T> {
-    return suspendCoroutine { emitter ->
-        this.subscribe(
-            { emitter.resume(OnComplete(it)) },
-            { emitter.resume(OnError(it)) }
-        )
-    }
-}
-
-suspend fun <T>Single<T>.toCoroutine(): TarladResult<T> {
-    return suspendCoroutine { emitter ->
-        this.subscribe(
-            {emitter.resume(OnComplete(it)) },
-            {emitter.resume(OnError(it)) }
-        ).dispose()
-    }
-}

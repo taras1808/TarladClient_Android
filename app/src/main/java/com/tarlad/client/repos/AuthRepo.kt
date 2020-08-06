@@ -1,18 +1,20 @@
 package com.tarlad.client.repos
 
-import com.tarlad.client.helpers.TarladResult
-import com.tarlad.client.models.LoginInfo
-import com.tarlad.client.models.Token
-import com.tarlad.client.models.User
+import com.tarlad.client.models.dto.LoginCredentials
+import com.tarlad.client.models.db.RefreshToken
+import com.tarlad.client.models.db.User
+import com.tarlad.client.models.dto.RefreshTokenDTO
+import com.tarlad.client.models.dto.Token
+import io.reactivex.rxjava3.core.Single
 
 interface AuthRepo {
-    suspend fun checkEmail(email: String): TarladResult<Unit>
-    suspend fun checkNickname(nickname: String): TarladResult<Unit>
-    suspend fun register(user: User): TarladResult<Token>
-    suspend fun login(loginInfo: LoginInfo): TarladResult<Token>
-    suspend fun loginWithToken(token: Token): TarladResult<Token>
-    suspend fun logout(token: Token): TarladResult<Unit>
-    suspend fun saveToken(token: Token)
-    suspend fun removeToken(token: Token)
-    suspend fun getToken(): Token?
+    fun checkEmail(email: String): Single<Unit>
+    fun checkNickname(nickname: String): Single<Unit>
+    fun register(user: User): Single<Token>
+    fun login(loginCredentials: LoginCredentials): Single<Token>
+    fun loginWithToken(token: RefreshTokenDTO): Single<Token>
+    fun logout(token: RefreshTokenDTO): Single<Unit>
+    fun saveToken(token: RefreshToken)
+    fun removeToken(token: RefreshToken)
+    fun getToken(): RefreshToken?
 }

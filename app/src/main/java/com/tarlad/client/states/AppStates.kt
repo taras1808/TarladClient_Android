@@ -1,5 +1,5 @@
 package com.tarlad.client.states
 
 enum class AppStates {
-    NotAuthenticated, Authenticated
+    NotAuthenticated, Authenticated, Proceed
 }

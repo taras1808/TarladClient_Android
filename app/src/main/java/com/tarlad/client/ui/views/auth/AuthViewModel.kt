@@ -5,69 +5,63 @@ import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.tarlad.client.AppSession
-import com.tarlad.client.helpers.OnComplete
-import com.tarlad.client.helpers.OnError
-import com.tarlad.client.models.LoginInfo
-import com.tarlad.client.models.Token
-import com.tarlad.client.models.User
+import com.tarlad.client.helpers.ioMain
+import com.tarlad.client.models.db.User
+import com.tarlad.client.models.dto.LoginCredentials
 import com.tarlad.client.repos.AuthRepo
 import com.tarlad.client.states.AppStates
 import com.tarlad.client.states.AuthState
 import com.tarlad.client.states.Register
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import kotlinx.coroutines.*
-import java.lang.Exception
+import io.reactivex.rxjava3.disposables.Disposable
+import io.socket.client.Manager
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
+import io.socket.engineio.client.Transport
+import java.util.*
+import kotlin.collections.HashMap
+
 
 class AuthViewModel(
     application: Application,
-    private val authRepo: AuthRepo,
-    val appSession: AppSession
+    private val socket: Socket,
+    val appSession: AppSession,
+    private val authRepo: AuthRepo
 ) : AndroidViewModel(application) {
 
     val state = MutableLiveData(AuthState.Login)
     val progressVisibility = MutableLiveData(View.GONE)
     val error = MutableLiveData<String>()
 
-    /**
-     * Register
-     */
-    val registerEmail = MutableLiveData<Register>(Register.Empty)
-    val registerNickname = MutableLiveData<Register>(Register.Empty)
+    val registerEmail = MutableLiveData(Register.Empty)
+    val registerNickname = MutableLiveData(Register.Empty)
 
-    var checkEmailJob: Job? = null
-    var checkNicknameJob: Job? = null
+    var checkEmailDisposable: Disposable? = null
+    var checkNicknameDisposable: Disposable? = null
 
     fun checkEmail(email: String) {
-        checkEmailJob = CoroutineScope(Dispatchers.Main).launch {
-            registerEmail.value = Register.Loading
-            when (val res = withContext(Dispatchers.IO) { authRepo.checkEmail(email) }){
-                is OnComplete -> registerEmail.value = Register.Ok
-                is OnError -> {
-                    //TODO check server error
-                    registerEmail.value = Register.Error
-                }
-            }
-        }
+        checkEmailDisposable = authRepo.checkEmail(email)
+            .ioMain()
+            .doOnSubscribe { registerEmail.value = Register.Loading }
+            .subscribe(
+                { registerEmail.value = Register.Ok },
+                { registerEmail.value = Register.Error }
+            )
     }
 
     fun isEmailMatchRegex(email: String): Boolean {
-        //TODO Regex
-        return email.matches(Regex("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"))
+        return email.matches(
+            Regex("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,6}$")
+        )
     }
 
     fun checkNickname(nickname: String) {
-        checkNicknameJob = CoroutineScope(Dispatchers.Main).launch {
-            registerNickname.value = Register.Loading
-            when (val res = withContext(Dispatchers.IO) { authRepo.checkNickname(nickname) }){
-                is OnComplete -> registerNickname.value = Register.Ok
-                is OnError -> {
-                    //TODO check server error
-                    registerNickname.value = Register.Error
-                }
-            }
-        }
+        checkNicknameDisposable = authRepo.checkNickname(nickname)
+            .ioMain()
+            .doOnSubscribe { registerNickname.value = Register.Loading }
+            .subscribe(
+                { registerNickname.value = Register.Ok },
+                { registerNickname.value = Register.Error }
+            )
     }
 
     private fun checkRegister(
@@ -120,23 +114,39 @@ class AuthViewModel(
         return true
     }
 
-    fun register(email: String, password: String, confirmPassword: String, nickname: String, name: String, surname: String) {
+    fun register(
+        email: String,
+        password: String,
+        confirmPassword: String,
+        nickname: String,
+        name: String,
+        surname: String
+    ) {
         if (!checkRegister(email, password, confirmPassword, nickname, name, surname)) return
-        progressVisibility.value = View.VISIBLE
-        CoroutineScope(Dispatchers.Main).launch {
-            when (val res = withContext(Dispatchers.IO) {
-                authRepo.register(User(-1, email, password, nickname, name, surname, null))
-            }){
-                is OnComplete -> saveToken(res.data)
-                is OnError -> error.value = res.t.toString()
-            }
-            progressVisibility.postValue(View.GONE)
-        }
+        val user = User(
+            -1,
+            email,
+            password,
+            nickname,
+            name,
+            surname,
+            null
+        )
+        authRepo.register(user)
+            .doOnSuccess { authRepo.saveToken(it.refreshToken) }
+            .ioMain()
+            .doOnSubscribe { progressVisibility.value = View.VISIBLE }
+            .doOnTerminate { progressVisibility.value = View.GONE }
+            .subscribe(
+                {
+                    appSession.userId = it.refreshToken.userId
+                    appSession.token = it.token
+                    appSession.state.value = AppStates.Authenticated
+                },
+                { error.value = it.toString() }
+            )
     }
 
-    /**
-     * Login
-     */
     private fun checkLogin(email: String, password: String): Boolean {
         if (email.isEmpty()) {
             error.value = "Empty email field"
@@ -157,27 +167,33 @@ class AuthViewModel(
 
     fun login(email: String, password: String) {
         if (!checkLogin(email, password)) return
-        progressVisibility.value = View.VISIBLE
-        CoroutineScope(Dispatchers.Main).launch {
-            when (val res =
-                withContext(Dispatchers.IO) { authRepo.login(LoginInfo(email, password)) }) {
-                is OnComplete -> saveToken(res.data)
-                is OnError -> {
-                    error.value = res.t.toString()
+        val loginInfo = LoginCredentials(email, password)
+        authRepo.login(loginInfo)
+            .doOnSuccess { authRepo.saveToken(it.refreshToken) }
+            .ioMain()
+            .doOnSubscribe { progressVisibility.value = View.VISIBLE }
+            .subscribe(
+                { token ->
+                    socket.on(Socket.EVENT_CONNECT, Emitter.Listener {
+                        socket.emit("join", token.refreshToken.userId)
+                    })
+                    appSession.userId = token.refreshToken.userId
+                    appSession.token = token.token
+                    appSession.state.value = AppStates.Authenticated
+                    socket.io().on(Manager.EVENT_TRANSPORT, Emitter.Listener {
+                        val transport: Transport = it[0] as Transport
+                        transport.on(Transport.EVENT_REQUEST_HEADERS, Emitter.Listener() { args ->
+                            val map: TreeMap<String, List<String>> = args[0] as TreeMap<String, List<String>>
+                            map["Authorization"] = listOf("Bearer ${token.token}")
+                        })
+                    })
+                    socket.connect()
+                },
+                {
+                    it.printStackTrace()
+                    error.value = it.toString()
                     progressVisibility.value = View.GONE
                 }
-            }
-        }
-    }
-
-    /**
-     * Private methods
-     */
-    private fun saveToken(token: Token) {
-        CoroutineScope(Dispatchers.IO).launch {
-            authRepo.saveToken(token)
-        }
-        appSession.token = token
-        appSession.state.value = AppStates.Authenticated
+            )
     }
 }

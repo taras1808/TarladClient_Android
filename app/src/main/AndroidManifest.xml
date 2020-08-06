@@ -4,18 +4,19 @@
     package="com.tarlad.client">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
-        <activity android:name=".ui.views.main.MainActivity">
+        <activity android:name=".ui.views.launcher.LauncherActivity"
+            android:theme="@style/AppTheme.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,12 +24,27 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.views.addChat.AddChatActivity"
-            android:parentActivityName=".ui.views.main.MainActivity" />
+            android:name=".ui.views.main.MainActivity">
+        </activity>
+        <activity android:name=".ui.views.auth.AuthActivity" />
+        <activity
+            android:name=".ui.views.chat.create.ChatCreateActivity"
+            android:parentActivityName=".ui.views.main.MainActivity"
+            android:theme="@style/Animation" />
         <activity
             android:name=".ui.views.chat.ChatActivity"
-            android:parentActivityName=".ui.views.main.MainActivity" />
-        <activity android:name=".ui.views.auth.AuthActivity" />
+            android:parentActivityName=".ui.views.main.MainActivity"
+            android:theme="@style/Animation" />
+        <activity
+            android:name=".ui.views.chat.details.ChatDetailsActivity"
+            android:parentActivityName=".ui.views.chat.ChatActivity"
+            android:theme="@style/Animation" />
+        <activity
+            android:name=".ui.views.chat.participants.ChatAddParticipantsActivity"
+            android:parentActivityName=".ui.views.chat.details.ChatDetailsActivity"
+            android:theme="@style/Animation" />
+
+        <service android:name=".services.MessagingService" />
     </application>
 
 </manifest>

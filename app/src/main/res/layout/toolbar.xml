@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <variable
+            name="vm"
+            type="com.tarlad.client.ui.views.main.MainViewModel" />
+    </data>
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@id/toolbar"
+        android:elevation="4dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/DrawerArrowStyle">
+
+
+        <TextView
+            android:id="@+id/toolbar_title"
+            style="@style/TextAppearance.AppCompat.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@{vm.title}"
+            android:textSize="20sp"
+            android:ellipsize="end"
+            android:maxLines="1" />
+
+
+    </androidx.appcompat.widget.Toolbar>
+
+</layout>

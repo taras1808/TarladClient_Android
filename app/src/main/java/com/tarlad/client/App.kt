@@ -18,10 +18,13 @@ class App : Application() {
                 authModule,
                 mainModule,
                 addChatModule,
-                chatModule
+                chatModule,
+                chatDetailsModule,
+                chatAddParticipantsModule
             )
         }
 
-//        startService(Intent(this, MessagingService::class.java))
+
+        startService(Intent(this, MessagingService::class.java))
     }
 }

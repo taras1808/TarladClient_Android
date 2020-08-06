@@ -1,10 +1,16 @@
 package com.tarlad.client.dao
 
 import androidx.room.*
-import com.tarlad.client.models.Chat
+import com.tarlad.client.models.db.Chat
 
 @Dao
 interface ChatDao {
+
+    @Query("SELECT * FROM chat")
+    fun getChatForUsers(): List<Chat>
+
+    @Query("SELECT * FROM chat")
+    fun getAll(): List<Chat>
 
     @Query("SELECT * FROM chat WHERE id == :id")
     fun getChatById(id: Long): Chat?
