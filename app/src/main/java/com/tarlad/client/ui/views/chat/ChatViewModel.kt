@@ -70,5 +70,11 @@ class ChatViewModel(
                 { error.value = it.toString() }
             )
     }
-}
 
+    fun deleteMessage(id: Long) {
+        val token = appSession.token ?: return
+        messagesRepo.deleteMessage(token, id)
+            .ioMain()
+            .subscribe({}, { error.value = it.toString() })
+    }
+}

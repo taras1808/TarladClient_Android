@@ -28,4 +28,10 @@ interface MessageApi {
 
     @GET("api/chats/messages/last")
     fun getLastMessages(@Header("Authorization") token: String): Single<List<LastMessage>>
+
+    @DELETE("api/messages/{messageId}/")
+    fun deleteMessage(
+        @Header("Authorization") token: String,
+        @Path("messageId") messageId: Long
+    ): Single<Unit>
 }

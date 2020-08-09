@@ -10,4 +10,5 @@ interface MessagesRepo {
     fun sendMessage(messageCreator: MessageCreator)
     fun getMessagesForChatBeforeTime(token: String, chatId: Long, time: Long, page: Long): Observable<List<Message>>
     fun getMessagesForChatAfterTime(token: String, chatId: Long, time: Long, page: Long): Observable<List<Message>>
+    fun deleteMessage(token: String, id: Long): Single<Unit>
 }

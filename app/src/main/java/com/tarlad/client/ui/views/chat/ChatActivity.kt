@@ -3,8 +3,10 @@ package com.tarlad.client.ui.views.chat
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
@@ -23,8 +25,6 @@ import kotlinx.android.synthetic.main.toolbar.view.*
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
-import java.lang.Exception
-import java.util.*
 
 
 class ChatActivity : AppCompatActivity() {
@@ -50,6 +50,12 @@ class ChatActivity : AppCompatActivity() {
 
         messages_recycler.adapter = adapter
 
+//        adapter.setOnLongItemClickListener(object : MessagesAdapter.OnLongClickItemListener {
+//            override fun onLongClickItem(v: View?, position: Int): Boolean {
+//                return false
+//            }
+//        })
+
         messages_recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -70,7 +76,6 @@ class ChatActivity : AppCompatActivity() {
 
             println(pair)
 
-
                 val id = pair.first
                 val messages = pair.second
 
@@ -83,10 +88,8 @@ class ChatActivity : AppCompatActivity() {
 
                 if (!messages.containsAll(adapter.pairs[id].orEmpty())) {
 
-
                     val toRemove = adapter.pairs[id].orEmpty().subtract(messages)
                     val toAdd = messages.subtract(adapter.pairs[id].orEmpty())
-
 
                     toRemove.forEach {
                         if (adapter.messages.contains(it)
@@ -135,7 +138,14 @@ class ChatActivity : AppCompatActivity() {
                     }
 
                     adapter.notifyItemChanged(posL + 1)
-                    adapter.notifyItemChanged(posF - 1)
+
+                    if (posF > 0 && posF < adapter.messages.size) {
+                        val next = adapter.messages.toList()[posF - 1]
+                        val prev = adapter.messages.toList()[posF]
+
+                        if (next.time - prev.time < 60_000 && next.userId == prev.userId || prev.userId != next.userId)
+                            adapter.notifyItemChanged(posF - 1)
+                    }
 
                     adapter.pairs[id] = messages
 
@@ -194,7 +204,7 @@ class ChatActivity : AppCompatActivity() {
 
 
         adapter.userId = vm.appSession.userId ?: -1
-//        adapter.listener = { time -> vm.loadOldMessages(chatId, time) }
+        adapter.listener = { id -> vm.deleteMessage(id) }
 
         vm.loadUsers(chatId)
 
