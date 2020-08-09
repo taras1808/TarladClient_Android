@@ -23,6 +23,10 @@ class ChatViewModel(
     val messages = MutableLiveData<Pair<String, List<Message>>>()
     val users = MutableLiveData<List<User>>()
     val complete = MutableLiveData<Boolean>(false)
+    val time = Date().time
+
+    var old = 0L
+    var new = 0L
 
     fun sendMessage(text: String, chatId: Long){
         val messageCreator = MessageCreator(
@@ -35,11 +39,10 @@ class ChatViewModel(
         messagesRepo.sendMessage(messageCreator)
     }
 
-    fun loadOldMessages(chatId: Long, time: Long){
-        println(time)
+    fun loadOldMessages(chatId: Long){
         val token = appSession.token ?: return
         val id = UUID.randomUUID().toString()
-        messagesRepo.getMessagesForChatBeforeTime(token, chatId, time)
+        messagesRepo.getMessagesForChatBeforeTime(token, chatId, time, old++)
             .ioMain()
             .subscribe(
                 { messages.value = Pair(id, it) },
@@ -48,10 +51,10 @@ class ChatViewModel(
             )
     }
 
-    fun loadNewMessages(chatId: Long, time: Long){
+    fun loadNewMessages(chatId: Long){
         val token = appSession.token ?: return
         val id = UUID.randomUUID().toString()
-        messagesRepo.getMessagesForChatAfterTime(token, chatId, time)
+        messagesRepo.getMessagesForChatAfterTime(token, chatId, time, new++)
             .ioMain()
             .subscribe(
                 { messages.value = Pair(id, it) },

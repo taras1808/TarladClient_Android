@@ -1,5 +1,6 @@
 package com.tarlad.client.ui.adapters
 
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,13 +9,12 @@ import com.bumptech.glide.Glide
 import com.tarlad.client.R
 import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.db.User
-import kotlinx.android.synthetic.main.message_frame.view.*
-import kotlinx.android.synthetic.main.message_from_me.view.*
 import kotlinx.android.synthetic.main.message_to_me.view.*
-import kotlinx.android.synthetic.main.message_to_me_textedit.view.*
+import java.text.SimpleDateFormat
+import java.time.*
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 import kotlin.math.absoluteValue
 
 class MessagesAdapter(
@@ -23,91 +23,122 @@ class MessagesAdapter(
     val users: ArrayList<User> = arrayListOf(),
     var userId: Long = -1,
     var listener: ((time: Long) -> Unit)? = {}
-) : RecyclerView.Adapter<MessagesAdapter.ViewHolder>(){
+) : RecyclerView.Adapter<MessagesAdapter.ViewHolder>() {
 
     var array: ArrayList<ArrayList<Message>> = ArrayList()
 
+    enum class MessagesAdapter {
+        FROM, TO
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.message_frame, parent, false)
-        return ViewHolder(
-            view,
-            users,
-            userId
-        )
+        return when (viewType) {
+            MessagesAdapter.FROM.ordinal ->
+                FromViewHolder(
+                    LayoutInflater.from(parent.context)
+                        .inflate(R.layout.message_from_me, parent, false), users
+                )
+            else ->
+                ToViewHolder(
+                    LayoutInflater.from(parent.context)
+                        .inflate(R.layout.message_to_me, parent, false), users
+                )
+        }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (messages.toList()[position].userId == userId) MessagesAdapter.FROM.ordinal else MessagesAdapter.TO.ordinal
     }
 
     override fun getItemCount(): Int {
-        var tmp: ArrayList<Message> = ArrayList()
-        var time: Long = 0
-        var author = ""
-        array.clear()
-        messages.forEach { message ->
-            if (author != message.userId.toString() || time - message.time > 60_000){
-                tmp = ArrayList<Message>().apply { add(message) }
-                array.add(tmp)
-            }else{
-                tmp.add(message)
-            }
-            time = message.time
-            author = message.userId.toString()
-        }
-        return array.size
+        return messages.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val message = array[position]
-        if (position == array.size - 1) listener?.let {
-            it(message.minBy { e -> e.time }?.time ?: 0)
-        }
-        holder.showNickname = position == array.size - 1 || array[position + 1].first().userId != message.first().userId
-        holder.messages = message
+        val message = messages.toList()[position]
+        holder.showNickname =
+            position == messages.size - 1 || messages.toList()[position + 1].userId != message.userId
+        holder.showImage = position == 0 || messages.toList()[position - 1].userId != message.userId
+        holder.withMargin =
+            (position + 1 < messages.size && message.time - messages.toList()[position + 1].time > 60_000)
+        holder.bind(message)
     }
 
-    class ViewHolder(val view: View, val users: List<User>, val userId: Long): RecyclerView.ViewHolder(view){
-
+    abstract class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var showNickname: Boolean = true
+        var showImage: Boolean = true
+        var withMargin: Boolean = true
 
-        var messages: ArrayList<Message> = ArrayList()
-            set(value) {
+        abstract fun bind(value: Message)
+    }
 
-                field = value
+    class FromViewHolder(val view: View, val users: List<User>) : ViewHolder(view) {
 
-                view.message_frame.removeAllViews()
+        override fun bind(value: Message) {
+            val scale = view.context.resources.displayMetrics.density
 
-                if (messages.isEmpty()) return
+            view.message.text = value.data
 
-                if (messages.first().userId != userId){
+            if (withMargin || showNickname)
+                view.message_block.layoutParams =
+                    (view.message_block.layoutParams as ViewGroup.MarginLayoutParams)
+                        .apply { setMargins(0, (12.0 * scale + 0.5).toInt(), 0, 0) }
+            else
+                view.message_block.layoutParams =
+                    (view.message_block.layoutParams as ViewGroup.MarginLayoutParams)
+                        .apply { setMargins(0, (4.0 * scale + 0.5).toInt(), 0, 0) }
 
-                    val messagesToMeList = LayoutInflater.from(view.context).inflate(R.layout.message_to_me, view.message_frame)
-
-                    if (showNickname){
-                        messagesToMeList.nickname.text = users.find { user -> user.id == messages.first().userId }?.nickname
-                    }else{
-                        messagesToMeList.nickname.visibility = View.GONE
-                    }
-
-                    value.reversed().forEach {
-                        val txt = LayoutInflater.from(view.context).inflate(R.layout.message_to_me_textedit, messagesToMeList.messages_to_me, false)
-                        txt.message.text = it.data
-                        messagesToMeList.messages_to_me.addView(txt)
-                    }
-
-
-                    Glide.with(messagesToMeList)
-                        .load("https://picsum.photos/" + (users.find { it.id == value.first().userId }?.nickname.hashCode().absoluteValue % 100 + 100))
-                        .into(messagesToMeList.imageView)
-
-                } else {
-
-                    val messagesFromMeList = LayoutInflater.from(view.context).inflate(R.layout.message_from_me, view.message_frame)
-
-                    value.reversed().forEach {
-                        val txt = LayoutInflater.from(view.context).inflate(R.layout.message_from_me_textedit, messagesFromMeList.messages_from_me, false)
-                        txt.message.text = it.data
-                        messagesFromMeList.messages_from_me.addView(txt)
-                    }
-
-                }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                view.time.text =
+                    ZonedDateTime.ofInstant(Date(value.time).toInstant(), ZoneId.systemDefault())
+                        .format(
+                            DateTimeFormatter.ofPattern("HH:mm")
+                        )
+            } else {
+                view.time.text =
+                    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(value.time))
             }
+        }
+    }
+
+    class ToViewHolder(val view: View, val users: List<User>) : ViewHolder(view) {
+
+        override fun bind(value: Message) {
+            val scale = view.context.resources.displayMetrics.density
+
+            if (showNickname) {
+                view.nickname.text = users.find { user -> user.id == value.userId }?.nickname
+                view.nickname.visibility = View.VISIBLE
+            } else {
+                view.nickname.visibility = View.GONE
+            }
+
+            if (withMargin && !showNickname)
+                view.message_block.layoutParams =
+                    (view.message_block.layoutParams as ViewGroup.MarginLayoutParams)
+                        .apply { setMargins(0, (12.0 * scale + 0.5).toInt(), 0, 0) }
+            else
+                view.message_block.layoutParams =
+                    (view.message_block.layoutParams as ViewGroup.MarginLayoutParams)
+                        .apply { setMargins(0, (4.0 * scale + 0.5).toInt(), 0, 0) }
+
+            view.message.text = value.data
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                view.time.text =
+                    ZonedDateTime.ofInstant(Date(value.time).toInstant(), ZoneId.systemDefault())
+                        .format(
+                            DateTimeFormatter.ofPattern("HH:mm")
+                        )
+            } else {
+                view.time.text =
+                    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(value.time))
+            }
+
+            if (showImage)
+                Glide.with(view)
+                    .load("https://picsum.photos/" + (users.find { it.id == value.userId }?.nickname.hashCode().absoluteValue % 100 + 100))
+                    .into(view.imageView)
+        }
     }
 }

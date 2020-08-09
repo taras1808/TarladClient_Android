@@ -21,4 +21,7 @@
     <color name="black">#000000</color>
     <color name="ripple">#AAAAAA</color>
     <color name="rippleItem">#DDDDDD</color>
+
+    <color name="gray">#777777</color>
+    <color name="grayLight">#EEEEEE</color>
 </resources>

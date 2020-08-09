@@ -40,25 +40,15 @@ class MessagesRepoImpl(
     }
 
     //TODO
-    override fun getMessagesForChatAfterTime(token: String, chatId: Long, time: Long): Observable<List<Message>> {
+    override fun getMessagesForChatAfterTime(token: String, chatId: Long, time: Long, page: Long): Observable<List<Message>> {
         return Observable.create { emitter ->
 
-            messageDao.getDistinctMessagesForChatAfterTimeObservable(chatId, time)
-                .takeUntil { it.size == 5 }
+            messageDao.getDistinctMessagesForChatAfterTimeObservable(chatId, time, page)
                 .subscribe({
                     emitter.onNext(it)
 
-                    if (it.size == 5)
-                        messageDao.getDistinctNewMessagesForChatObservable(
-                            chatId,
-                            it.last().time,
-                            time
-                        )
-                            .subscribe({
-                                emitter.onNext(it)
-                            }, {})
-                    else if (it.isEmpty())
-                        messageApi.getMessagesForChatAfterTime("Bearer $token", chatId, time)
+                    if (it.isEmpty())
+                        messageApi.getMessagesForChatAfterTime("Bearer $token", chatId, time, page)
                             .ioIo()
                             .subscribe(
                                 { messages -> messageDao.insertAll(messages) },
@@ -70,50 +60,35 @@ class MessagesRepoImpl(
         }
     }
 
-    override fun getMessagesForChatBeforeTime(token: String, chatId: Long, time: Long): Observable<List<Message>> {
+    override fun getMessagesForChatBeforeTime(token: String, chatId: Long, time: Long, page: Long): Observable<List<Message>> {
         return Observable.create { emitter ->
 
-            val cache = messageDao.getMessagesForChatBeforeTime(chatId, time)
+            val cache = messageDao.getMessagesForChatBeforeTime(chatId, time, page)
 
-            val toDispose = if (cache.isNotEmpty())
-                    messageDao.getDistinctMessagesForChatObservable(
-                        chatId,
-                        time,
-                        cache.last().time
-                    ).subscribe({ emitter.onNext(it) }, {})
-                else null
+            val toDispose = messageDao.getDistinctMessagesForChatObservable(chatId, time, page)
+                .subscribe({ emitter.onNext(it) }, {})
 
-            messageApi.getMessagesForChatBeforeTime("Bearer $token", chatId, time)
+            messageApi.getMessagesForChatBeforeTime("Bearer $token", chatId, time, page)
                 .ioIo()
                 .subscribe(
                     { messages ->
 
                         if (messages.isEmpty()) {
                             if (cache.isEmpty()) {
-                                toDispose?.dispose()
                                 emitter.onComplete()
                             } else {
                                 messageDao.deleteAll(cache)
                             }
+                            toDispose.dispose()
                             return@subscribe
                         }
 
                         if (cache.size != messages.size || !cache.containsAll(messages)) {
-                            toDispose?.dispose()
                             messageDao.deleteAll(cache)
                             messageDao.insertAll(messages)
-                            messageDao.getDistinctMessagesForChatObservable(
-                                chatId,
-                                time,
-                                messages.last().time
-                            )
-                                .subscribe({
-                                    if (messages.containsAll(it)) {
-                                        emitter.onNext(it)
-                                    } else {
-                                        messageDao.deleteAll(it.subtract(messages).toList())
-                                    }
-                                }, {})
+                            messageDao.getDistinctMessagesForChatObservable(chatId, time, page)
+                                .takeWhile { it != messages }
+                                .subscribe({ messageDao.deleteAll(it) }, {})
                         }
                     }, { err -> err.printStackTrace() }
                 )

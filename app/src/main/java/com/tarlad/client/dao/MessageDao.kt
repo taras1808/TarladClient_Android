@@ -21,20 +21,20 @@ interface MessageDao {
     @Query("SELECT * FROM message WHERE chat_id = :chatId ORDER BY time DESC LIMIT 1")
     fun getLastMessageForChat(chatId: Long): Message?
 
-    @Query("SELECT * FROM message WHERE chat_id = :chatId AND time < :time ORDER BY time DESC LIMIT 10")
-    fun getMessagesForChatBeforeTime(chatId: Long, time: Long): List<Message>
+    @Query("SELECT * FROM message WHERE chat_id = :chatId AND time < :time ORDER BY time DESC LIMIT 10 OFFSET (10 * :page)")
+    fun getMessagesForChatBeforeTime(chatId: Long, time: Long, page: Long): List<Message>
 
-    @Query("SELECT * FROM message WHERE chat_id = :chatId AND time > :time ORDER BY time ASC LIMIT 5")
-    fun getMessagesForChatAfterTimeObservable(chatId: Long, time: Long): Observable<List<Message>>
+    @Query("SELECT * FROM message WHERE chat_id = :chatId AND time > :time ORDER BY time ASC LIMIT 5 OFFSET (5 * :page)")
+    fun getMessagesForChatAfterTimeObservable(chatId: Long, time: Long, page: Long): Observable<List<Message>>
 
-    fun getDistinctMessagesForChatAfterTimeObservable(chatId: Long, time: Long): Observable<List<Message>>
-        = getMessagesForChatAfterTimeObservable(chatId, time).distinctUntilChanged()
+    fun getDistinctMessagesForChatAfterTimeObservable(chatId: Long, time: Long, page: Long): Observable<List<Message>>
+        = getMessagesForChatAfterTimeObservable(chatId, time, page).distinctUntilChanged()
 
-    @Query("SELECT * FROM message WHERE chat_id = :chatId AND time < :timeTo AND time >= :timeFrom ORDER BY time DESC")
-    fun getMessagesForChatObservable(chatId: Long, timeTo: Long, timeFrom: Long): Observable<List<Message>>
+    @Query("SELECT * FROM message WHERE chat_id = :chatId AND time < :time ORDER BY time DESC LIMIT 10 OFFSET (10 * :page)")
+    fun getMessagesForChatObservable(chatId: Long, time: Long, page: Long): Observable<List<Message>>
 
-    fun getDistinctMessagesForChatObservable(chatId: Long, timeTo: Long, timeFrom: Long): Observable<List<Message>>
-            = getMessagesForChatObservable(chatId, timeTo, timeFrom).distinctUntilChanged()
+    fun getDistinctMessagesForChatObservable(chatId: Long, time: Long, page: Long): Observable<List<Message>>
+            = getMessagesForChatObservable(chatId, time, page).distinctUntilChanged()
 
     @Query("SELECT * FROM message WHERE chat_id = :chatId AND time <= :timeTo AND time > :timeFrom ORDER BY time ASC")
     fun getNewMessagesForChatObservable(chatId: Long, timeTo: Long, timeFrom: Long): Observable<List<Message>>

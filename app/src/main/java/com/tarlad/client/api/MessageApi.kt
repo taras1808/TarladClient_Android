@@ -10,11 +10,21 @@ import retrofit2.http.*
 interface MessageApi {
 
     @GET("api/chats/{chatId}/messages")
-    fun getMessagesForChatBeforeTime(@Header("Authorization") token: String, @Path("chatId") chatId: Long, @Query("before") time: Long): Single<List<Message>>
+    fun getMessagesForChatBeforeTime(
+        @Header("Authorization") token: String,
+        @Path("chatId") chatId: Long,
+        @Query("before") time: Long,
+        @Query("page") page: Long
+    ): Single<List<Message>>
 
 
     @GET("api/chats/{chatId}/messages")
-    fun getMessagesForChatAfterTime(@Header("Authorization") token: String, @Path("chatId") chatId: Long, @Query("after") time: Long): Single<List<Message>>
+    fun getMessagesForChatAfterTime(
+        @Header("Authorization") token: String,
+        @Path("chatId") chatId: Long,
+        @Query("after") time: Long,
+        @Query("page") page: Long
+    ): Single<List<Message>>
 
     @GET("api/chats/messages/last")
     fun getLastMessages(@Header("Authorization") token: String): Single<List<LastMessage>>
