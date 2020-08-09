@@ -14,6 +14,7 @@ import com.tarlad.client.repos.AuthRepo
 import com.tarlad.client.repos.MessagesRepo
 import com.tarlad.client.states.AppStates
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 import io.socket.client.Socket
 import org.json.JSONObject
 import org.reactivestreams.Publisher
@@ -93,5 +94,9 @@ class MessagesRepoImpl(
                     }, { err -> err.printStackTrace() }
                 )
         }
+    }
+
+    override fun deleteMessage(token: String, id: Long): Single<Unit> {
+        return messageApi.deleteMessage("Bearer $token", id)
     }
 }
