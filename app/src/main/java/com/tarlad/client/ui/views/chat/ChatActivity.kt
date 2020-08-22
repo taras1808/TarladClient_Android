@@ -3,25 +3,23 @@ package com.tarlad.client.ui.views.chat
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tarlad.client.R
+import com.tarlad.client.databinding.ActivityChatBinding
+import com.tarlad.client.ui.adapters.MessageItemAnimator
 import com.tarlad.client.ui.adapters.MessagesAdapter
 import com.tarlad.client.ui.views.chat.details.ChatDetailsActivity
 import kotlinx.android.synthetic.main.activity_chat.*
-import kotlinx.android.synthetic.main.toolbar.view.*
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -33,198 +31,70 @@ class ChatActivity : AppCompatActivity() {
     private val adapter = MessagesAdapter()
     private var chatId: Long = -1
 
-    var loading = false
-
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_chat)
-        setSupportActionBar(toolbar as Toolbar)
 
         val title = intent.getStringExtra("TITLE")
         chatId = intent.getLongExtra("ID",-1L)
+        vm.title.value = title
 
+        val binding: ActivityChatBinding =
+            DataBindingUtil.setContentView(this, R.layout.activity_chat)
+        binding.vm = vm
+        binding.lifecycleOwner = this
+
+        setSupportActionBar(binding.toolbarInclude.toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
-        toolbar.toolbar_title.text = title
 
 
-        messages_recycler.adapter = adapter
-
-//        adapter.setOnLongItemClickListener(object : MessagesAdapter.OnLongClickItemListener {
-//            override fun onLongClickItem(v: View?, position: Int): Boolean {
-//                return false
-//            }
-//        })
-
-        messages_recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                val totalItemCount = messages_recycler.layoutManager?.itemCount ?: 0
-                val lastVisibleItem = (messages_recycler.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
-                if (!loading && totalItemCount <= lastVisibleItem + 5) {
-                    vm.loadOldMessages(chatId)
-                    loading = true
-                }
-            }
-        })
-
-        vm.complete.observe(this, Observer {
-            if (it) messages_recycler.clearOnScrollListeners()
-        })
-
-        vm.messages.observe(this , Observer { pair ->
-
-            println(pair)
-
-                val id = pair.first
-                val messages = pair.second
-
-                val w = messages.lastOrNull()?.time
-                val v = adapter.messages.firstOrNull()?.time
-
-                if (w ?: 0 > v ?: 0 && messages.size == 5) {
-                    vm.loadNewMessages(chatId)
-                }
-
-                if (!messages.containsAll(adapter.pairs[id].orEmpty())) {
-
-                    val toRemove = adapter.pairs[id].orEmpty().subtract(messages)
-                    val toAdd = messages.subtract(adapter.pairs[id].orEmpty())
-
-                    toRemove.forEach {
-                        if (adapter.messages.contains(it)
-                            && adapter.pairs.map { e -> e.value.contains(it) }.count { e -> e } != 2
-                        ) {
-                            val pos = adapter.messages.toList().indexOf(it)
-                            adapter.messages.remove(it)
-                            adapter.notifyItemRemoved(pos)
-
-                            if (pos > 0 && pos < adapter.messages.size) {
-                                val next = adapter.messages.toList()[pos - 1]
-                                val prev = adapter.messages.toList()[pos]
-
-                                if (it.userId == prev.userId && next.userId != it.userId)
-                                    adapter.notifyItemChanged(pos)
-
-                                if (next.time - prev.time > 60_000 && next.userId == prev.userId || prev.userId != it.userId)
-                                    adapter.notifyItemChanged(pos - 1)
-                            }
-                        }
-                    }
-
-                    toAdd.forEach {
-                        if (!adapter.messages.contains(it)) {
-                            adapter.messages.add(it)
-                            val pos = adapter.messages.toList().indexOf(it)
-                            adapter.notifyItemInserted(pos)
-
-                            adapter.notifyItemChanged(pos + 1)
-                            adapter.notifyItemChanged(pos - 1)
-                        }
-                    }
-
-                    adapter.pairs[id] = messages
+        initRecyclerView()
+        initAdapter()
 
 
-                } else if (!adapter.pairs.containsKey(id)) {
+        observeError()
+        observeUsers()
+        observeMessages()
 
-                    adapter.messages.addAll(messages)
-                    val posF = adapter.messages.toList().indexOf(messages.firstOrNull())
-                    val posL = adapter.messages.toList().indexOf(messages.lastOrNull())
 
-                    messages.forEach {
-                        val pos = adapter.messages.toList().indexOf(it)
-                        adapter.notifyItemInserted(pos)
-                    }
+        vm.chatId = chatId
+        vm.getUsers(chatId)
+        vm.observeMessages(chatId)
+        vm.getMessages(chatId)
+    }
 
-                    adapter.notifyItemChanged(posL + 1)
-
-                    if (posF > 0 && posF < adapter.messages.size) {
-                        val next = adapter.messages.toList()[posF - 1]
-                        val prev = adapter.messages.toList()[posF]
-
-                        if (next.time - prev.time < 60_000 && next.userId == prev.userId || prev.userId != next.userId)
-                            adapter.notifyItemChanged(posF - 1)
-                    }
-
-                    adapter.pairs[id] = messages
-
-                } else {
-
-                    val toRemove = adapter.pairs[id].orEmpty().subtract(messages)
-                    val toAdd = messages.subtract(adapter.pairs[id].orEmpty())
-
-                    toRemove.forEach {
-                        if (adapter.messages.contains(it)
-                            && adapter.pairs.map { e -> e.value.contains(it) }.count { e -> e } != 2
-                        ) {
-                            val pos = adapter.messages.toList().indexOf(it)
-                            adapter.messages.remove(it)
-                            adapter.notifyItemRemoved(pos)
-
-                            if (pos > 0 && pos < adapter.messages.size) {
-
-                                val next = adapter.messages.toList()[pos - 1]
-                                val prev = adapter.messages.toList()[pos]
-
-                                if (it.userId == prev.userId && next.userId != it.userId)
-                                    adapter.notifyItemChanged(pos)
-
-                                if (next.time - prev.time > 60_000 && next.userId == prev.userId || prev.userId != it.userId)
-                                    adapter.notifyItemChanged(pos - 1)
-                            }
-                        }
-                    }
-
-                    toAdd.forEach {
-                        if (!adapter.messages.contains(it)) {
-                            adapter.messages.add(it)
-                            val pos = adapter.messages.toList().indexOf(it)
-                            adapter.notifyItemInserted(pos)
-
-                            adapter.notifyItemChanged(pos + 1)
-                            adapter.notifyItemChanged(pos - 1)
-                        }
-                    }
-
-                    adapter.pairs[id] = messages
-
-                }
-
-            loading = false
-        })
-
+    private fun observeUsers() {
         vm.users.observe(this , Observer {
             adapter.users.clear()
             adapter.users.addAll(it)
 
+            val users = adapter.users.filter { e -> e.id != vm.appSession.userId }
 
-            toolbar.toolbar_title.text = adapter.users.filter { e -> e.id != vm.appSession.userId }.map { e -> e.nickname }.reduceRight { s, acc -> "$s, $acc" }
+            vm.title.value =
+                if (users.isNotEmpty())
+                    users.map { e -> e.nickname }
+                        .reduceRight { s, acc -> "$s, $acc" }
+                else ""
         })
+    }
 
-
-        adapter.userId = vm.appSession.userId ?: -1
-        adapter.listener = { id -> vm.deleteMessage(id) }
-
-        vm.loadUsers(chatId)
-
-        vm.loadNewMessages(chatId)
-        vm.loadOldMessages(chatId)
-
-
-
-        send_button_chat.setOnClickListener {
-            val text = message_to_send.text.toString().trim()
-            message_to_send.text.clear()
-            if (text.isEmpty()) return@setOnClickListener
-            vm.sendMessage(text, chatId)
-            messages_recycler.layoutManager?.startSmoothScroll(object : LinearSmoothScroller(it.context) {
-                override fun getVerticalSnapPreference(): Int = LinearSmoothScroller.SNAP_TO_END
-                override fun getHorizontalSnapPreference(): Int = LinearSmoothScroller.SNAP_TO_END
-            }.apply { targetPosition = 0 })
-        }
-
-        observeError()
+    private fun observeMessages() {
+        vm.messages.observe(this, Observer { pair ->
+            val action = pair.first
+            val messages = pair.second
+            when (action) {
+                Messages.ADD -> adapter.add(messages)
+                Messages.REMOVE -> adapter.remove(messages)
+                Messages.DELETE -> adapter.delete(messages)
+                Messages.UPDATE -> adapter.update(messages)
+                Messages.REPLACE -> adapter.replace(messages)
+                Messages.COMPLETE -> messages_recycler.clearOnScrollListeners()
+                Messages.SEND -> {
+                    adapter.add(messages)
+                    messages_recycler.smoothScrollToPosition(0)
+                }
+            }
+        })
     }
 
     private fun observeError() {
@@ -259,5 +129,24 @@ class ChatActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         finish()
         return false
+    }
+
+    private fun initRecyclerView() {
+        messages_recycler.adapter = adapter
+        messages_recycler.itemAnimator = MessageItemAnimator()
+        messages_recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val totalItemCount = messages_recycler.layoutManager!!.itemCount
+                val lastVisibleItem = (messages_recycler.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+                if (totalItemCount <= lastVisibleItem + 5)
+                    vm.getMessages(chatId)
+            }
+        })
+    }
+
+    private fun initAdapter() {
+        adapter.userId = vm.appSession.userId ?: -1
+        adapter.listener = { id -> vm.deleteMessage(id) }
     }
 }

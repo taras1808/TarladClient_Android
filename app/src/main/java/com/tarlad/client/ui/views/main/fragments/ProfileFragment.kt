@@ -3,6 +3,7 @@ package com.tarlad.client.ui.views.main.fragments
 import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
 import com.tarlad.client.R
 import com.tarlad.client.dao.UserDao
@@ -13,8 +14,9 @@ import kotlinx.android.synthetic.main.fragment_profile.*
 import org.koin.android.ext.android.inject
 import kotlin.math.absoluteValue
 
-class ProfileFragment(val vm: MainViewModel): Fragment(R.layout.fragment_profile) {
+class ProfileFragment: Fragment(R.layout.fragment_profile) {
 
+    val vm: MainViewModel by activityViewModels()
     val userDao: UserDao by inject()
 
 

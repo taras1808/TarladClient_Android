@@ -48,20 +48,11 @@ interface UserDao {
     fun insert(user: User)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(vararg users: User)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(users: List<User>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(users: Set<User>)
 
     @Delete
     fun delete(user: User)
 
     @Delete
     fun deleteAll(users: List<User>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertOrReplace(users: List<User>)
 }

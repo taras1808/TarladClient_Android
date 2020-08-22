@@ -21,12 +21,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 val appModule = module {
 
     single {
-        IO.socket("http://192.168.0.108:3000/")
+        IO.socket("http://192.168.0.109:3000/")
     }
 
     single {
         Retrofit.Builder()
-            .baseUrl("http://192.168.0.108:3000/")
+            .baseUrl("http://192.168.0.109:3000/")
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
             .build()
@@ -53,7 +53,7 @@ val appModule = module {
     single<UsersRepo> { UsersRepoImpl(get(), get(), get()) }
     single<ChatsRepo> { ChatsRepoImpl(get(), get(), get()) }
     single<MessagesRepo> { MessagesRepoImpl(get(), get(), get(), get(), get(), get()) }
-    single<MainRepo> { MainRepoImpl(get(), get(), get(), get(), get(), get()) }
+    single<MainRepo> { MainRepoImpl(get(), get(), get(), get(), get()) }
 
     single { get<Retrofit>().create(AuthApi::class.java) }
     single { get<Retrofit>().create(ChatsApi::class.java) }

@@ -20,49 +20,58 @@ class ChatViewModel(
 ): ViewModel() {
 
     val error = MutableLiveData<String>()
-    val messages = MutableLiveData<Pair<String, List<Message>>>()
+    val messages = MutableLiveData<Pair<Messages, List<Message>>>()
     val users = MutableLiveData<List<User>>()
-    val complete = MutableLiveData<Boolean>(false)
     val time = Date().time
 
-    var old = 0L
-    var new = 0L
+    val title = MutableLiveData<String>()
 
-    fun sendMessage(text: String, chatId: Long){
+    val message = MutableLiveData<String>()
+    var chatId: Long = -1
+
+
+    var page = 0L
+
+    fun sendMessage(){
+        if (message.value.isNullOrEmpty()) return
+        val userId = appSession.userId ?: return
         val messageCreator = MessageCreator(
             chatId,
             "text",
-            text,
+            message.value!!.trim(),
             Date().time
         )
 
-        messagesRepo.sendMessage(messageCreator)
-    }
+        message.value = ""
 
-    fun loadOldMessages(chatId: Long){
-        val token = appSession.token ?: return
-        val id = UUID.randomUUID().toString()
-        messagesRepo.getMessagesForChatBeforeTime(token, chatId, time, old++)
+        messagesRepo.sendMessage(messageCreator, userId)
             .ioMain()
             .subscribe(
-                { messages.value = Pair(id, it) },
-                { error.value = it.toString() },
-                { complete.value = true }
-            )
-    }
-
-    fun loadNewMessages(chatId: Long){
-        val token = appSession.token ?: return
-        val id = UUID.randomUUID().toString()
-        messagesRepo.getMessagesForChatAfterTime(token, chatId, time, new++)
-            .ioMain()
-            .subscribe(
-                { messages.value = Pair(id, it) },
+                { messages.value = it },
                 { error.value = it.toString() }
             )
     }
 
-    fun loadUsers(chatId: Long){
+    fun getMessages(chatId: Long){
+        messagesRepo.getMessagesForChatBeforeTime(chatId, time, page++)
+            .ioMain()
+            .subscribe(
+                { messages.value = it },
+                { error.value = it.toString() }
+            )
+    }
+
+    fun observeMessages(chatId: Long) {
+        val userId = appSession.userId ?: return
+        messagesRepo.observeMessages(chatId, userId)
+            .ioMain()
+            .subscribe(
+                { messages.value = it },
+                { error.value = it.toString() }
+            )
+    }
+
+    fun getUsers(chatId: Long){
         usersRepo.getUsersFromChat(chatId)
             .ioMain()
             .subscribe(
@@ -72,9 +81,11 @@ class ChatViewModel(
     }
 
     fun deleteMessage(id: Long) {
-        val token = appSession.token ?: return
-        messagesRepo.deleteMessage(token, id)
+        messagesRepo.deleteMessage(id)
             .ioMain()
-            .subscribe({}, { error.value = it.toString() })
+            .subscribe(
+                { messages.value = it },
+                { error.value = it.toString() }
+            )
     }
 }

@@ -7,9 +7,6 @@ import com.tarlad.client.models.db.Chat
 interface ChatDao {
 
     @Query("SELECT * FROM chat")
-    fun getChatForUsers(): List<Chat>
-
-    @Query("SELECT * FROM chat")
     fun getAll(): List<Chat>
 
     @Query("SELECT * FROM chat WHERE id == :id")
@@ -20,4 +17,7 @@ interface ChatDao {
 
     @Delete
     fun delete(chat: Chat?)
+
+    @Query("DELETE FROM chat")
+    fun truncate()
 }

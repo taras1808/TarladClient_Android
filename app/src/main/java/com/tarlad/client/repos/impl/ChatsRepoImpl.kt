@@ -14,11 +14,15 @@ import io.reactivex.rxjava3.core.Single
 import retrofit2.http.Header
 import java.lang.Exception
 
-class ChatsRepoImpl(private val chatsApi: ChatsApi, private val chatDao: ChatDao, private val chatListDao: ChatListDao): ChatsRepo {
+class ChatsRepoImpl(
+    private val chatsApi: ChatsApi,
+    private val chatDao: ChatDao,
+    private val chatListDao: ChatListDao
+) : ChatsRepo {
 
     override fun createChat(userId: Long, token: String, chatCreator: ChatCreator): Single<Chat> {
         return Single.create {
-            val cache: Chat? = chatDao.getChatForUsers()
+            val cache: Chat? = chatDao.getAll()
                 .map { chats ->
                     val users = chatListDao.getUsersIdByChatId(chats.id, userId)
                     if (users.sorted() == chatCreator.data.sorted()) chats
@@ -59,7 +63,11 @@ class ChatsRepoImpl(private val chatsApi: ChatsApi, private val chatDao: ChatDao
         }
     }
 
-    override fun addParticipants(token: String, chatId: Long,  chatCreator: ChatCreator): Single<Unit> {
+    override fun addParticipants(
+        token: String,
+        chatId: Long,
+        chatCreator: ChatCreator
+    ): Single<Unit> {
         return chatsApi.addParticipants("Bearer $token", chatId, chatCreator)
             .doOnSuccess {
                 chatCreator.data.forEach {

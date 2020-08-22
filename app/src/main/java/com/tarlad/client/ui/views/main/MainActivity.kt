@@ -28,22 +28,17 @@ import org.koin.core.parameter.parametersOf
 
 class MainActivity : AppCompatActivity() {
 
-    private val vm: MainViewModel by viewModel<MainViewModel> { parametersOf(lifecycleScope.id) }
-    private lateinit var homeFragment: HomeFragment
-    private lateinit var profileFragment: ProfileFragment
+    private val vm: MainViewModel by viewModel { parametersOf(lifecycleScope.id) }
+    private val homeFragment: HomeFragment = HomeFragment()
+    private val profileFragment: ProfileFragment = ProfileFragment()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
-
 
         val binding: ActivityMainBinding =
             DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.vm = vm
         binding.lifecycleOwner = this
-
-        homeFragment = HomeFragment(vm)
-        profileFragment = ProfileFragment(vm)
 
         setSupportActionBar(binding.toolbarInclude.toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
@@ -66,7 +61,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.action_logout -> showLogoutAlertDialog()
             R.id.action_chat_create -> openChatCreateActivity()
         }
@@ -86,7 +81,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openChatCreateActivity() {
-        val intent = Intent(this , ChatCreateActivity::class.java)
+        val intent = Intent(this, ChatCreateActivity::class.java)
         startActivity(intent)
     }
 
@@ -94,20 +89,20 @@ class MainActivity : AppCompatActivity() {
         vm.appSession.state.observe(this, Observer {
             when (it) {
                 AppStates.NotAuthenticated -> {
-                    val intent = Intent(this , AuthActivity::class.java)
+                    val intent = Intent(this, AuthActivity::class.java)
                     startActivity(intent)
                     finish()
                 }
                 AppStates.Authenticated -> {
-
                 }
-                else -> {}
+                else -> {
+                }
             }
         })
     }
 
     private fun observeOpenChat() {
-        vm.openChat.observe(this , Observer {
+        vm.openChat.observe(this, Observer {
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("ID", it.id)
             intent.putExtra("TITLE", it.title)
@@ -116,8 +111,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observeFragment() {
-        vm.fragment.observe(this , Observer {
-            val selectedFragment = when (it){
+        vm.fragment.observe(this, Observer {
+            val selectedFragment = when (it) {
                 0 -> homeFragment
                 1 -> profileFragment
                 else -> throw IllegalArgumentException()

@@ -174,9 +174,6 @@ class AuthViewModel(
             .doOnSubscribe { progressVisibility.value = View.VISIBLE }
             .subscribe(
                 { token ->
-                    socket.on(Socket.EVENT_CONNECT, Emitter.Listener {
-                        socket.emit("join", token.refreshToken.userId)
-                    })
                     appSession.userId = token.refreshToken.userId
                     appSession.token = token.token
                     appSession.state.value = AppStates.Authenticated

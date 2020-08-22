@@ -1,124 +1,164 @@
 package com.tarlad.client.repos.impl
 
-import com.tarlad.client.api.ChatsApi
-import com.tarlad.client.api.MessageApi
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.tarlad.client.dao.ChatDao
 import com.tarlad.client.dao.ChatListDao
 import com.tarlad.client.dao.MessageDao
 import com.tarlad.client.dao.UserDao
-import com.tarlad.client.helpers.ioIo
 import com.tarlad.client.models.db.Chat
 import com.tarlad.client.models.db.ChatList
 import com.tarlad.client.models.db.Message
-import com.tarlad.client.models.db.User
+import com.tarlad.client.models.dto.ChatLists
 import com.tarlad.client.models.dto.LastMessage
 import com.tarlad.client.repos.MainRepo
+import com.tarlad.client.ui.views.main.Chats
 import io.reactivex.rxjava3.core.Observable
+import io.socket.client.Ack
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
 
 class MainRepoImpl(
+    private val socket: Socket,
     private val chatListDao: ChatListDao,
     private val userDao: UserDao,
     private val chatDao: ChatDao,
-    private val chatsApi: ChatsApi,
-    private val messageDao: MessageDao,
-    private val messageApi: MessageApi
+    private val messageDao: MessageDao
 ) : MainRepo {
 
-    override fun getChats(token: String, userId: Long): Observable<List<LastMessage>> {
+    override fun getChats(userId: Long, time: Long, page: Long): Observable<Pair<Chats, List<LastMessage>>> {
         return Observable.create { emitter ->
 
-            messageApi.getLastMessages("Bearer $token")
-                .ioIo()
-                .subscribe(
-                    { messages ->
-                        messages.forEach { lastMessage ->
-                            val last = messageDao.getLastMessageForChat(lastMessage.id)
+            val cache = messageDao.getLastMessagesBeforeTime(time, page)
+            var list = ArrayList<LastMessage>()
 
-                            if (last != lastMessage.message) {
-                                messageDao.insert(lastMessage.message)
-                                chatDao.insert(Chat(lastMessage.id, lastMessage.title))
-                            }
-                        }
-                    },
-                    { err -> err.printStackTrace() }
+            cache.forEach { message ->
+                val chat = chatDao.getChatById(message.chatId)
+                val users = chatListDao.getUsersByChatId(message.chatId, userId)
+                val title = chat?.title ?:
+                    if (users.isNotEmpty())
+                        users.map { it.nickname }
+                            .reduceRight { s, acc -> "$s, $acc" }
+                    else ""
+
+                list.add(LastMessage(message.chatId, title, message, users))
+            }
+
+            emitter.onNext(Pair(Chats.ADD, list))
+            list = ArrayList<LastMessage>()
+
+            socket.emit("chats/messages/last", time, page, Ack {
+                val chats = Gson().fromJson<List<LastMessage>>(
+                    it[0].toString(),
+                    object : TypeToken<List<LastMessage>>() {}.type
                 )
 
-            messageDao.getLastMessage()
-                .subscribe(
-                    { list ->
-                        val newList = arrayListOf<LastMessage>()
-                        list.forEach { message ->
+                chats.forEach { chat ->
+                    messageDao.insert(chat.message)
+                    chatDao.insert(Chat(chat.id, chat.title))
+                    val users = chatListDao.getUsersByChatId(chat.id)
+                    users.forEach { user ->
+                        chatListDao.delete(ChatList(chat.id, user.id))
+                    }
+                    chat.users.forEach {  user ->
+                        chatListDao.insert(ChatList(chat.id, user.id))
+                    }
+                    userDao.insertAll(chat.users)
+                    val title = chat.title ?:
+                        chat.users.filter { e -> e.id != userId }
+                            .map { e -> e.nickname }
+                            .reduceRight { s, acc -> "$s, $acc" }
 
-                                val chat = chatDao.getChatById(message.chatId)
-                                if (chat == null) {
-                                    val newChat = chatsApi.getChat("Bearer $token", message.chatId)
-                                        .onErrorComplete()
-                                        .blockingGet()
+                    list.add(LastMessage(chat.id, title, chat.message, chat.users))
+                }
 
-                                    if (newChat != null && newChat.users.map { e -> e.id }.contains(userId)) {
-
-                                        chatDao.insert(Chat(newChat.id, newChat.title))
-                                        newChat.users.forEach {
-                                            chatListDao.insert(ChatList(newChat.id, it.id))
-                                        }
-                                        val cache = userDao.getUserFromChat(newChat.id)
-                                        userDao.insertAll(newChat.users)
-
-                                        val title: String =
-                                            newChat.title ?: chatListDao.getUsersNicknameByChatId(
-                                                newChat.id,
-                                                userId
-                                            )
-                                                .reduceRight { s, acc -> "$s, $acc" }
-                                        newList.add(LastMessage(newChat.id, title, message))
-
-                                    }
-                                } else {
-
-                                    val users = chatListDao.getUsersIdByChatId(chat.id)
-
-                                    if (users.isEmpty()) {
-
-                                        val newChat = chatsApi.getChat("Bearer $token", message.chatId)
-                                            .onErrorComplete()
-                                            .blockingGet()
-
-                                        if (newChat != null && newChat.users.map { e -> e.id }.contains(userId)) {
-
-                                            chatDao.insert(Chat(newChat.id, newChat.title))
-                                            newChat.users.forEach {
-                                                chatListDao.insert(ChatList(newChat.id, it.id))
-                                            }
-                                            val cache = userDao.getUserFromChat(newChat.id)
-                                            userDao.insertAll(newChat.users)
-
-                                            val title: String =
-                                                newChat.title ?:
-                                                    chatListDao.getUsersNicknameByChatId(newChat.id, userId)
-                                                        .reduceRight { s, acc -> "$s, $acc" }
-                                            newList.add(LastMessage(newChat.id, title, message))
-                                        }
-
-                                    } else {
-
-                                        if (users.contains(userId)) {
-
-                                            val title: String =
-                                                chat.title ?: chatListDao.getUsersNicknameByChatId(
-                                                    chat.id,
-                                                    userId
-                                                )
-                                                    .reduceRight { s, acc -> "$s, $acc" }
-                                            newList.add(LastMessage(chat.id, title, message))
-
-                                        }
-                                    }
-                                }
-                        }
-                        emitter.onNext(newList)
-                    },
-                    { err -> err.printStackTrace() }
-                )
+                emitter.onNext(Pair(Chats.ADD, list))
+                emitter.onComplete()
+            })
         }
+    }
+
+    private var messageListener: Emitter.Listener? = null
+    private var delListener: Emitter.Listener? = null
+
+    override fun observeChats(userId: Long): Observable<Pair<Chats, List<LastMessage>>> {
+        return Observable.create { emitter ->
+
+            messageListener?.let { socket.off("message", it) }
+            messageListener = Emitter.Listener {
+                val message: Message = Gson().fromJson(it[0].toString(), Message::class.java)
+                messageDao.insert(message)
+                val chat = chatDao.getChatById(message.chatId)
+                if (chat == null) {
+                    socket.emit("chats", message.chatId, Ack { array ->
+                        val chatLists = Gson().fromJson(array[0].toString(), ChatLists::class.java)
+                        chatDao.insert(Chat(chatLists.id, chatLists.title))
+                        chatLists.users.forEach { user ->
+                            chatListDao.insert(ChatList(chatLists.id, user.id))
+                        }
+                        userDao.insertAll(chatLists.users)
+                        val title = chatLists.title ?:
+                        chatLists.users
+                            .filter { e -> e.id != userId }
+                            .map { e -> e.nickname }
+                            .reduceRight { s, acc -> "$s, $acc" }
+                        emitter.onNext(Pair(Chats.ADD, listOf(LastMessage(chatLists.id, title, message, chatLists.users))))
+                    })
+                } else {
+                    val users = chatListDao.getUsersByChatId(message.chatId, userId)
+                    val title = chat.title ?:
+                    users.map { e -> e.nickname }
+                        .reduceRight { s, acc -> "$s, $acc" }
+                    emitter.onNext(Pair(Chats.ADD,listOf(LastMessage(chat.id, title, message, users))))
+                }
+            }
+            socket.on("message", messageListener)
+
+            delListener?.let { socket.off("del", it) }
+            delListener = Emitter.Listener {
+                messageDao.getById(it[0].toString().toLong())?.let { message ->
+                    messageDao.delete(message)
+
+                    val previousMessage = messageDao.getLastMessageForChat(message.chatId)
+
+                    if (previousMessage == null) {
+                        socket.emit("chats/last", message.chatId, Ack { array ->
+                            val previousMessage = Gson().fromJson(array[0].toString(), Message::class.java)
+
+                            if (previousMessage.id == 0L) {
+                                emitter.onNext(Pair(Chats.DELETE,listOf(LastMessage(message.chatId, null, message, listOf()))))
+                                return@Ack
+                            }
+
+                            if (message.time < previousMessage.time) return@Ack
+
+                            val chat = chatDao.getChatById(message.chatId)!!
+                            val users = chatListDao.getUsersByChatId(message.chatId, userId)
+                            val title = chat.title ?: users.map { e -> e.nickname }
+                                .reduceRight { s, acc -> "$s, $acc" }
+
+                            emitter.onNext(Pair(Chats.ADD,listOf(LastMessage(chat.id, title, previousMessage!!, users))))
+
+                        })
+                    } else {
+
+                        if (message.time < previousMessage.time) return@let
+
+                        val chat = chatDao.getChatById(message.chatId)!!
+                        val users = chatListDao.getUsersByChatId(message.chatId, userId)
+                        val title = chat.title ?: users.map { e -> e.nickname }
+                            .reduceRight { s, acc -> "$s, $acc" }
+
+                        emitter.onNext(Pair(Chats.ADD,listOf(LastMessage(chat.id, title, previousMessage!!, users))))
+                    }
+                }
+            }
+            socket.on("del", delListener)
+        }
+    }
+
+    override fun truncate() {
+        messageDao.truncate()
+        chatDao.truncate()
     }
 }

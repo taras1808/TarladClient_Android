@@ -29,7 +29,7 @@
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/windowBackground"
+            android:background="@mipmap/ic_icon"
             android:clickable="true"
             android:elevation="5dp"
             android:focusable="true"
@@ -41,15 +41,12 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <ImageView
-                android:layout_width="128dp"
-                android:layout_height="128dp"
-                android:src="@mipmap/ic_launcher" />
-
             <ProgressBar
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="48dp" />
+                android:layout_marginTop="180dp"
+                android:indeterminateTint="@color/black" />
+
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

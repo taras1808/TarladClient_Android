@@ -3,12 +3,23 @@ package com.tarlad.client.repos
 import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.db.RefreshToken
 import com.tarlad.client.models.dto.MessageCreator
+import com.tarlad.client.ui.views.chat.Messages
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
 interface MessagesRepo {
-    fun sendMessage(messageCreator: MessageCreator)
-    fun getMessagesForChatBeforeTime(token: String, chatId: Long, time: Long, page: Long): Observable<List<Message>>
-    fun getMessagesForChatAfterTime(token: String, chatId: Long, time: Long, page: Long): Observable<List<Message>>
-    fun deleteMessage(token: String, id: Long): Single<Unit>
+    fun sendMessage(
+        messageCreator: MessageCreator,
+        userId: Long
+    ): Observable<Pair<Messages, List<Message>>>
+
+    fun deleteMessage(id: Long): Single<Pair<Messages, List<Message>>>
+
+    fun getMessagesForChatBeforeTime(
+        chatId: Long,
+        time: Long,
+        page: Long
+    ): Observable<Pair<Messages, List<Message>>>
+
+    fun observeMessages(chatId: Long, userId: Long): Observable<Pair<Messages, List<Message>>>
 }

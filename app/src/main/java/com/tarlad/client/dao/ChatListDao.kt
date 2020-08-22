@@ -7,6 +7,12 @@ import com.tarlad.client.models.db.User
 @Dao
 interface ChatListDao {
 
+    @Query("SELECT user.* FROM chat JOIN chatList ON chat.id = chatList.chat_id JOIN user ON user.id = chatList.user_id WHERE chat.id == :chatId")
+    fun getUsersByChatId(chatId: Long): List<User>
+
+    @Query("SELECT user.* FROM chat JOIN chatList ON chat.id = chatList.chat_id JOIN user ON user.id = chatList.user_id WHERE chat.id == :chatId AND user.id != :userId")
+    fun getUsersByChatId(chatId: Long, userId: Long): List<User>
+
     @Query("SELECT user.id FROM chat JOIN chatList ON chat.id = chatList.chat_id JOIN user ON user.id = chatList.user_id WHERE chat.id == :chatId AND user.id != :userId")
     fun getUsersIdByChatId(chatId: Long, userId: Long): List<Long>
 
@@ -20,13 +26,7 @@ interface ChatListDao {
     fun insert(chatList: ChatList)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(vararg chatLists: ChatList)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(users: List<User>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(users: Set<User>)
 
     @Delete
     fun delete(chatList: ChatList)
@@ -34,6 +34,5 @@ interface ChatListDao {
     @Delete
     fun deleteAll(chatLists: List<ChatList>)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertOrReplace(chatLists: List<ChatList>)
+
 }

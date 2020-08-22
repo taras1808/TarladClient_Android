@@ -28,7 +28,7 @@ class ChatDetailsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_chat_details)
         setSupportActionBar(toolbar as Toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
-        toolbar.toolbar_title.text = "Details"
+//        toolbar.toolbar_title.text = "Details"
 
         val chatId: Long = intent.getLongExtra("ID",-1L)
 

@@ -36,7 +36,6 @@ class MessagingService: Service() {
     }
 
     private val socket: Socket by inject()
-    private val gson: Gson = Gson()
     private val messageDao: MessageDao by inject()
     private val tokenDao: TokenDao by inject()
     private val preferences: Preferences by inject()
@@ -46,28 +45,28 @@ class MessagingService: Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         socket.on(Socket.EVENT_CONNECT, Emitter.Listener {
-            preferences.userId?.let {
-                socket.emit("join", it)
-            }
+            socket.emit("join")
         })
 
         socket.on("join", Emitter.Listener {
-            socket.emit("join", it[0].toString())
+            socket.emit("join")
         })
 
-        socket.on("del") {i ->
-            messageDao.getById(i[0].toString())?.let {
-                println(it)
-                messageDao.delete(it)
-                println(messageDao.getById(it.id.toString()))
-            }
-        }
+//        socket.on("del") {i ->
+//            messageDao.getById(i[0].toString())?.let {
+//                println(it)
+//                messageDao.delete(it)
+//                println(messageDao.getById(it.id.toString()))
+//            }
+//        }
 
         socket.on("error") {
             it.forEach {
                 val refreshToken = tokenDao.getToken()
-                if (it == "authentication" || refreshToken == null) appSession.state.postValue(AppStates.NotAuthenticated)
-                else if (it == "token") {
+                if (it == "authentication" || refreshToken == null) {
+                    appSession.state.postValue(AppStates.NotAuthenticated)
+                    socket.disconnect()
+                } else if (it == "token") {
                     authRepo.loginWithToken(RefreshTokenDTO(refreshToken.value))
                         .doOnSuccess {
                             authRepo.removeToken(refreshToken)
@@ -109,23 +108,23 @@ class MessagingService: Service() {
             }
         }
 
-        socket.on("message", Emitter.Listener {
-            val message: Message = gson.fromJson(it[0].toString(), Message::class.java)
-            messageDao.insert(message)
-
-            val builder = NotificationCompat.Builder(this, "YOUR_CHANNEL_ID")
-                .setSmallIcon(R.drawable.ic_notification_overlay)
-                .setContentTitle("My notification")
-                .setContentText(message.data)
-                .setStyle(NotificationCompat.BigTextStyle()
-                    .bigText(message.data))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-            with(NotificationManagerCompat.from(this)) {
-                notify(1, builder.build())
-            }
-
-        })
+//        socket.on("message", Emitter.Listener {
+//            val message: Message = Gson().fromJson(it[0].toString(), Message::class.java)
+//            messageDao.insert(message)
+//
+////            val builder = NotificationCompat.Builder(this, "YOUR_CHANNEL_ID")
+////                .setSmallIcon(R.drawable.ic_notification_overlay)
+////                .setContentTitle("My notification")
+////                .setContentText(message.data)
+////                .setStyle(NotificationCompat.BigTextStyle()
+////                    .bigText(message.data))
+////                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+////
+////            with(NotificationManagerCompat.from(this)) {
+////                notify(1, builder.build())
+////            }
+//
+//        })
 
         preferences.token?.let { token ->
             socket.io().on(Manager.EVENT_TRANSPORT, Emitter.Listener {
@@ -140,25 +139,25 @@ class MessagingService: Service() {
 
         socket.connect()
 
-        val channel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel(
-                "YOUR_CHANNEL_ID",
-                "YOUR_CHANNEL_NAME",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-        } else {
-            null
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            channel?.description = "YOUR_NOTIFICATION_CHANNEL_DESCRIPTION"
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            channel?.let {
-                (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(
-                    it
-                )
-            }
-        }
+//        val channel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            NotificationChannel(
+//                "YOUR_CHANNEL_ID",
+//                "YOUR_CHANNEL_NAME",
+//                NotificationManager.IMPORTANCE_DEFAULT
+//            )
+//        } else {
+//            null
+//        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            channel?.description = "YOUR_NOTIFICATION_CHANNEL_DESCRIPTION"
+//        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            channel?.let {
+//                (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(
+//                    it
+//                )
+//            }
+//        }
 
         return super.onStartCommand(intent, flags, startId)
     }

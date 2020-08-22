@@ -23,9 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.views.main.MainActivity">
-        </activity>
+        <activity android:name=".ui.views.main.MainActivity" />
         <activity android:name=".ui.views.auth.AuthActivity" />
         <activity
             android:name=".ui.views.chat.create.ChatCreateActivity"

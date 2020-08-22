@@ -1,7 +1,6 @@
 package com.tarlad.client.ui.views.main
 
 import android.view.MenuItem
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.tarlad.client.AppSession
@@ -13,9 +12,9 @@ import com.tarlad.client.models.dto.RefreshTokenDTO
 import com.tarlad.client.repos.AuthRepo
 import com.tarlad.client.repos.MainRepo
 import com.tarlad.client.states.AppStates
-import com.tarlad.client.ui.adapters.MainAdapter
 import io.reactivex.rxjava3.core.Single
 import io.socket.client.Socket
+import java.util.*
 
 class MainViewModel(
     private val socket: Socket,
@@ -24,25 +23,34 @@ class MainViewModel(
     private val authRepo: AuthRepo
 ): ViewModel() {
 
-    val fragment = MutableLiveData<Int>(0)
+    val fragment = MutableLiveData(0)
 
     val title = MutableLiveData<String>()
 
     val error = MutableLiveData<String>()
-    val messages = MutableLiveData<List<LastMessage>>()
+    val chats = MutableLiveData<Pair<Chats, List<LastMessage>>>()
     val openChat = MutableLiveData<Chat>()
 
-    init {
-        loadChats()
-    }
+    var page = 0L
+    var time = Date().time
 
-    fun loadChats() {
-        val token = appSession.token ?: return
+
+    fun getChats() {
         val userId = appSession.userId ?: return
-        mainRepo.getChats(token, userId)
+        mainRepo.getChats(userId, time, page++)
             .ioMain()
             .subscribe(
-                { messages.value = it },
+                { chats.value = it },
+                { error.value = it.toString() }
+            )
+    }
+
+    fun observeChats() {
+        val userId = appSession.userId ?: return
+        mainRepo.observeChats(userId)
+            .ioMain()
+            .subscribe(
+                { chats.value = it },
                 { error.value = it.toString() }
             )
     }
@@ -57,7 +65,10 @@ class MainViewModel(
                         return@subscribe
                     }
                     authRepo.logout(RefreshTokenDTO(refreshToken.value))
-                        .doOnSuccess { authRepo.removeToken(refreshToken) }
+                        .doOnSuccess {
+                            authRepo.removeToken(refreshToken)
+                            mainRepo.truncate()
+                        }
                         .ioMain()
                         .doOnTerminate {
                             appSession.token = null

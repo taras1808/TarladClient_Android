@@ -15,7 +15,7 @@
         android:orientation="vertical"
         tools:context=".ui.views.main.MainActivity">
 
-        <include app:vm="@{vm}" android:id="@+id/toolbarInclude" layout="@layout/toolbar" />
+        <include app:title="@{vm.title}" android:id="@+id/toolbarInclude" layout="@layout/toolbar" />
 
         <FrameLayout
             android:id="@+id/container"

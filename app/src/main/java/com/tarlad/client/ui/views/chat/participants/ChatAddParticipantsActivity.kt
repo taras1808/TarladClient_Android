@@ -33,7 +33,7 @@ class ChatAddParticipantsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_chat_create)
         setSupportActionBar(toolbar as Toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
-        toolbar.toolbar_title.text = getString(R.string.add_participants)
+//        toolbar.toolbar_title.text = getString(R.string.add_participants)
 
         observeError()
         observeUsers()
