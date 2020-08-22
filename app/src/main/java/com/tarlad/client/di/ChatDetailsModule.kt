@@ -10,9 +10,8 @@ val chatDetailsModule = module {
     scope<ChatDetailsActivity> {
     }
 
-    viewModel { (scopeId: ScopeID) ->
+    viewModel { (_: ScopeID) ->
         ChatDetailsViewModel(
-            get(),
             get(),
             get()
         )

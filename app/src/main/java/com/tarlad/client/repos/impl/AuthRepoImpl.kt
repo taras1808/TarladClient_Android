@@ -9,7 +9,6 @@ import com.tarlad.client.models.dto.RefreshTokenDTO
 import com.tarlad.client.models.dto.Token
 import com.tarlad.client.repos.AuthRepo
 import io.reactivex.rxjava3.core.Single
-import java.util.concurrent.TimeUnit
 
 class AuthRepoImpl(private val tokenDao: TokenDao, private val authApi: AuthApi) : AuthRepo {
 

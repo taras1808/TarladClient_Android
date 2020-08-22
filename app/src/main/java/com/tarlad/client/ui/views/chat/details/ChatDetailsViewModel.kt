@@ -5,13 +5,11 @@ import androidx.lifecycle.ViewModel
 import com.tarlad.client.AppSession
 import com.tarlad.client.helpers.ioMain
 import com.tarlad.client.models.db.User
-import com.tarlad.client.repos.ChatsRepo
 import com.tarlad.client.repos.UsersRepo
 
 class ChatDetailsViewModel(
     val appSession: AppSession,
-    private val usersRepo: UsersRepo,
-    private val chatsRepo: ChatsRepo
+    private val usersRepo: UsersRepo
 ): ViewModel() {
 
     val error = MutableLiveData<String>()

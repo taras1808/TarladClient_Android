@@ -4,7 +4,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.tarlad.client.AppSession
 import com.tarlad.client.helpers.ioMain
-import com.tarlad.client.models.db.Chat
 import com.tarlad.client.models.dto.ChatCreator
 import com.tarlad.client.models.db.User
 import com.tarlad.client.repos.ChatsRepo
@@ -53,4 +52,3 @@ class ChatAddParticipantsViewModel(
             )
     }
 }
-

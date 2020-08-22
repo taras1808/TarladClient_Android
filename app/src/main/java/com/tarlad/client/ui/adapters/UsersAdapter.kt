@@ -1,5 +1,6 @@
 package com.tarlad.client.ui.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,6 +41,7 @@ class UsersAdapter(
 
     class UserViewHolder(val view: View, listener: (user: User?, isChecked: Boolean) -> Unit): RecyclerView.ViewHolder(view) {
         var user: User? = null
+            @SuppressLint("SetTextI18n")
             set(value) {
                 field = value
                 view.nickname.text = value?.nickname

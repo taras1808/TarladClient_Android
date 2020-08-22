@@ -8,11 +8,18 @@ import com.tarlad.client.models.db.User
 import com.tarlad.client.repos.UsersRepo
 import io.reactivex.rxjava3.core.Observable
 
-class UsersRepoImpl(private val tokenDao: TokenDao, private val userDao: UserDao, private val usersApi: UsersApi) : UsersRepo {
+class UsersRepoImpl(
+    private val userDao: UserDao,
+    private val usersApi: UsersApi
+) : UsersRepo {
 
     override fun searchUsers(q: String, userId: Long, page: Int): Observable<List<User>> {
         return Observable.create {
-            val cache = if (q.isEmpty()) userDao.getAll(userId, page) else userDao.getByNickname(q, userId, page)
+            val cache = if (q.isEmpty()) userDao.getAll(userId, page) else userDao.getByNickname(
+                q,
+                userId,
+                page
+            )
             it.onNext(cache)
             if (q.isNotEmpty())
                 usersApi.searchUsers(q, userId, page)
@@ -25,15 +32,23 @@ class UsersRepoImpl(private val tokenDao: TokenDao, private val userDao: UserDao
                             }
                             it.onComplete()
                         },
-                        { err ->  it.onError(err) }
+                        { err -> it.onError(err) }
                     )
             else it.onComplete()
         }
     }
 
-    override fun searchUsersForChat(token: String, q: String, chatId: Long, page: Int): Observable<List<User>> {
+    override fun searchUsersForChat(
+        token: String,
+        q: String,
+        chatId: Long,
+        page: Int
+    ): Observable<List<User>> {
         return Observable.create {
-            val cache = if (q.isEmpty()) userDao.getAllForChat(chatId, page) else userDao.getByNicknameForChat(q, chatId, page)
+            val cache = if (q.isEmpty()) userDao.getAllForChat(
+                chatId,
+                page
+            ) else userDao.getByNicknameForChat(q, chatId, page)
             it.onNext(cache)
             if (q.isNotEmpty())
                 usersApi.searchUsersForChat("Bearer $token", chatId, q, page)
@@ -46,7 +61,7 @@ class UsersRepoImpl(private val tokenDao: TokenDao, private val userDao: UserDao
                             }
                             it.onComplete()
                         },
-                        { err ->  it.onError(err) }
+                        { err -> it.onError(err) }
                     )
             else it.onComplete()
         }

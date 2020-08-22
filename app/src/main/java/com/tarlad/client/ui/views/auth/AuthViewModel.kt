@@ -15,12 +15,11 @@ import com.tarlad.client.states.Register
 import io.reactivex.rxjava3.disposables.Disposable
 import io.socket.client.Manager
 import io.socket.client.Socket
-import io.socket.emitter.Emitter
 import io.socket.engineio.client.Transport
 import java.util.*
-import kotlin.collections.HashMap
 
 
+@Suppress("UNCHECKED_CAST")
 class AuthViewModel(
     application: Application,
     private val socket: Socket,
@@ -177,13 +176,14 @@ class AuthViewModel(
                     appSession.userId = token.refreshToken.userId
                     appSession.token = token.token
                     appSession.state.value = AppStates.Authenticated
-                    socket.io().on(Manager.EVENT_TRANSPORT, Emitter.Listener {
+                    socket.io().on(Manager.EVENT_TRANSPORT) {
                         val transport: Transport = it[0] as Transport
-                        transport.on(Transport.EVENT_REQUEST_HEADERS, Emitter.Listener() { args ->
-                            val map: TreeMap<String, List<String>> = args[0] as TreeMap<String, List<String>>
+                        transport.on(Transport.EVENT_REQUEST_HEADERS) { args ->
+                            val map: TreeMap<String, List<String>> =
+                                args[0] as TreeMap<String, List<String>>
                             map["Authorization"] = listOf("Bearer ${token.token}")
-                        })
-                    })
+                        }
+                    }
                     socket.connect()
                 },
                 {

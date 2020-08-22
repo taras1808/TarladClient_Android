@@ -2,14 +2,17 @@ package com.tarlad.client.ui.adapters
 
 import android.os.Build
 import android.view.LayoutInflater
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.core.view.forEach
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.tarlad.client.R
 import com.tarlad.client.databinding.MessageFromMeBinding
 import com.tarlad.client.databinding.MessageToMeBinding
 import com.tarlad.client.models.db.Message
@@ -31,7 +34,6 @@ class MessagesAdapter(
     var userId: Long = -1,
     var listener: ((id: Long) -> Unit)? = {}
 ) : RecyclerView.Adapter<MessagesAdapter.ViewHolder>() {
-
 
     enum class MessagesAdapter {
         FROM, TO
@@ -189,21 +191,18 @@ class MessagesAdapter(
             withMargin: Boolean,
             showNickname: Boolean
         ) {
-            binding.root.message_block.setOnClickListener {
-                listener?.let { it(message.id) }
-            }
 
-//            binding.root.message_block..setOnCreateContextMenuListener { menu, _, _ ->
-//                MenuInflater(binding.root.context).inflate(R.menu.context_menu_messages, menu)
-//                menu.forEach {
-//                    it.setOnMenuItemClickListener { item ->
-//                        when (item.itemId) {
-//                            R.id.action_delete_message -> listener?.let { it(message.id) }
-//                        }
-//                        true
-//                    }
-//                }
-//            }
+            binding.root.message_block.setOnCreateContextMenuListener { menu, _, _ ->
+                MenuInflater(binding.root.context).inflate(R.menu.context_menu_messages, menu)
+                menu.forEach {
+                    it.setOnMenuItemClickListener { item ->
+                        when (item.itemId) {
+                            R.id.action_delete_message -> listener?.let { it(message.id) }
+                        }
+                        true
+                    }
+                }
+            }
             binding.message = message
             binding.showDateTime = showDateTime
             binding.withMargin = withMargin

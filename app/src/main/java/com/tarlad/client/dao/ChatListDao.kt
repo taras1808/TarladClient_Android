@@ -34,5 +34,4 @@ interface ChatListDao {
     @Delete
     fun deleteAll(chatLists: List<ChatList>)
 
-
 }

@@ -1,9 +1,7 @@
 package com.tarlad.client
 
 import androidx.lifecycle.MutableLiveData
-import com.tarlad.client.dao.TokenDao
 import com.tarlad.client.helpers.Preferences
-import com.tarlad.client.models.db.RefreshToken
 import com.tarlad.client.states.AppStates
 
 class AppSession(private val preferences: Preferences) {

@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SortedList
 import com.bumptech.glide.Glide
 import com.tarlad.client.R
 import com.tarlad.client.models.db.Chat

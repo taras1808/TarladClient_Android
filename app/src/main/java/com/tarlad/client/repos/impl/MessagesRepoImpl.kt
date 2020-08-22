@@ -2,13 +2,9 @@ package com.tarlad.client.repos.impl
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.tarlad.client.AppSession
-import com.tarlad.client.api.MessageApi
 import com.tarlad.client.dao.MessageDao
-import com.tarlad.client.dao.TokenDao
 import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.dto.MessageCreator
-import com.tarlad.client.repos.AuthRepo
 import com.tarlad.client.repos.MessagesRepo
 import com.tarlad.client.ui.views.chat.Messages
 import io.reactivex.rxjava3.core.Observable
@@ -20,11 +16,7 @@ import org.json.JSONObject
 
 class MessagesRepoImpl(
     private val socket: Socket,
-    private val appSession: AppSession,
-    private val messageApi: MessageApi,
-    private val messageDao: MessageDao,
-    private val authRepo: AuthRepo,
-    private val tokenDao: TokenDao
+    private val messageDao: MessageDao
 ) : MessagesRepo {
 
     override fun sendMessage(

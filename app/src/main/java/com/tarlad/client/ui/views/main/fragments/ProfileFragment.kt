@@ -1,7 +1,7 @@
 package com.tarlad.client.ui.views.main.fragments
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
@@ -17,9 +17,10 @@ import kotlin.math.absoluteValue
 class ProfileFragment: Fragment(R.layout.fragment_profile) {
 
     val vm: MainViewModel by activityViewModels()
-    val userDao: UserDao by inject()
+    private val userDao: UserDao by inject()
 
 
+    @SuppressLint("SetTextI18n")
     override fun onAttach(context: Context) {
         super.onAttach(context)
 

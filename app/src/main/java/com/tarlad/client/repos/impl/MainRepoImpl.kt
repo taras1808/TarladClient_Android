@@ -45,7 +45,7 @@ class MainRepoImpl(
             }
 
             emitter.onNext(Pair(Chats.ADD, list))
-            list = ArrayList<LastMessage>()
+            list = ArrayList()
 
             socket.emit("chats/messages/last", time, page, Ack {
                 val chats = Gson().fromJson<List<LastMessage>>(
@@ -123,21 +123,21 @@ class MainRepoImpl(
 
                     if (previousMessage == null) {
                         socket.emit("chats/last", message.chatId, Ack { array ->
-                            val previousMessage = Gson().fromJson(array[0].toString(), Message::class.java)
+                            val loadedPreviousMessage = Gson().fromJson(array[0].toString(), Message::class.java)
 
-                            if (previousMessage.id == 0L) {
+                            if (loadedPreviousMessage.id == 0L) {
                                 emitter.onNext(Pair(Chats.DELETE,listOf(LastMessage(message.chatId, null, message, listOf()))))
                                 return@Ack
                             }
 
-                            if (message.time < previousMessage.time) return@Ack
+                            if (message.time < loadedPreviousMessage.time) return@Ack
 
                             val chat = chatDao.getChatById(message.chatId)!!
                             val users = chatListDao.getUsersByChatId(message.chatId, userId)
                             val title = chat.title ?: users.map { e -> e.nickname }
                                 .reduceRight { s, acc -> "$s, $acc" }
 
-                            emitter.onNext(Pair(Chats.ADD,listOf(LastMessage(chat.id, title, previousMessage!!, users))))
+                            emitter.onNext(Pair(Chats.ADD,listOf(LastMessage(chat.id, title, loadedPreviousMessage!!, users))))
 
                         })
                     } else {
@@ -149,7 +149,7 @@ class MainRepoImpl(
                         val title = chat.title ?: users.map { e -> e.nickname }
                             .reduceRight { s, acc -> "$s, $acc" }
 
-                        emitter.onNext(Pair(Chats.ADD,listOf(LastMessage(chat.id, title, previousMessage!!, users))))
+                        emitter.onNext(Pair(Chats.ADD,listOf(LastMessage(chat.id, title, previousMessage, users))))
                     }
                 }
             }

@@ -7,7 +7,6 @@ import com.tarlad.client.helpers.ioMain
 import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.dto.MessageCreator
 import com.tarlad.client.models.db.User
-import com.tarlad.client.repos.ChatsRepo
 import com.tarlad.client.repos.MessagesRepo
 import com.tarlad.client.repos.UsersRepo
 import java.util.*
@@ -15,7 +14,6 @@ import java.util.*
 class ChatViewModel(
     val appSession: AppSession,
     private val usersRepo: UsersRepo,
-    private val chatsRepo: ChatsRepo,
     private val messagesRepo: MessagesRepo
 ): ViewModel() {
 

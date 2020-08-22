@@ -1,7 +1,5 @@
 package com.tarlad.client.di
 
-import com.tarlad.client.repos.MainRepo
-import com.tarlad.client.repos.impl.MainRepoImpl
 import com.tarlad.client.ui.views.main.MainActivity
 import com.tarlad.client.ui.views.main.MainViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -13,7 +11,7 @@ val mainModule = module {
 
     }
 
-    viewModel {  (scopeId: ScopeID) ->
+    viewModel {  (_: ScopeID) ->
         MainViewModel(
             get(),
             get(),

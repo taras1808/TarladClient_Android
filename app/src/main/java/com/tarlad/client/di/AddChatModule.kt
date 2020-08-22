@@ -11,7 +11,7 @@ val addChatModule = module {
 
     }
 
-    viewModel { (scopeId: ScopeID) ->
+    viewModel { (_: ScopeID) ->
         ChatCreateViewModel(
             get(),
             get(),

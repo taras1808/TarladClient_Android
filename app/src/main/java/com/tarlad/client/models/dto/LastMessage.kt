@@ -1,6 +1,5 @@
 package com.tarlad.client.models.dto
 
-import com.tarlad.client.models.db.Chat
 import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.db.User
 

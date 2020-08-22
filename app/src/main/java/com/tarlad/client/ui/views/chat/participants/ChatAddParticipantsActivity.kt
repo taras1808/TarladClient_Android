@@ -14,7 +14,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.tarlad.client.R
 import com.tarlad.client.ui.adapters.UsersAdapter
 import kotlinx.android.synthetic.main.activity_chat_create.*
-import kotlinx.android.synthetic.main.toolbar.view.*
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
