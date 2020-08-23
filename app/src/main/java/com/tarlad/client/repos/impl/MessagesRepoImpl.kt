@@ -19,6 +19,8 @@ class MessagesRepoImpl(
     private val messageDao: MessageDao
 ) : MessagesRepo {
 
+    val map = HashMap<Message, Ack>()
+
     override fun sendMessage(
         messageCreator: MessageCreator,
         userId: Long
@@ -50,16 +52,16 @@ class MessagesRepoImpl(
         }
     }
 
-    override fun deleteMessage(id: Long): Single<Pair<Messages, List<Message>>> {
+    override fun deleteMessage(message: Message): Single<Pair<Messages, List<Message>>> {
         return Single.create { emitter ->
             emitter.onSuccess(
                 Pair(
                     Messages.DELETE,
-                    listOf(Message(id, -1, -1, "", "", 0))
+                    listOf(message)
                 )
             )
-            if (id != -1L)
-                socket.emit("messages/delete", id)
+            if (message.id != -1L)
+                socket.emit("messages/delete", message.id)
         }
     }
 

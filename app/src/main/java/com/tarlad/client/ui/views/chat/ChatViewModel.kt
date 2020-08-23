@@ -27,10 +27,9 @@ class ChatViewModel(
     val message = MutableLiveData<String>()
     var chatId: Long = -1
 
-
     var page = 0L
 
-    fun sendMessage(){
+    fun sendMessage() {
         if (message.value.isNullOrEmpty()) return
         val userId = appSession.userId ?: return
         val messageCreator = MessageCreator(
@@ -50,7 +49,7 @@ class ChatViewModel(
             )
     }
 
-    fun getMessages(chatId: Long){
+    fun getMessages(chatId: Long) {
         messagesRepo.getMessagesForChatBeforeTime(chatId, time, page++)
             .ioMain()
             .subscribe(
@@ -69,7 +68,7 @@ class ChatViewModel(
             )
     }
 
-    fun getUsers(chatId: Long){
+    fun getUsers(chatId: Long) {
         usersRepo.getUsersFromChat(chatId)
             .ioMain()
             .subscribe(
@@ -78,8 +77,8 @@ class ChatViewModel(
             )
     }
 
-    fun deleteMessage(id: Long) {
-        messagesRepo.deleteMessage(id)
+    fun deleteMessage(message: Message) {
+        messagesRepo.deleteMessage(message)
             .ioMain()
             .subscribe(
                 { messages.value = it },

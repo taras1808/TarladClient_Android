@@ -12,7 +12,7 @@ interface MessagesRepo {
         userId: Long
     ): Observable<Pair<Messages, List<Message>>>
 
-    fun deleteMessage(id: Long): Single<Pair<Messages, List<Message>>>
+    fun deleteMessage(message: Message): Single<Pair<Messages, List<Message>>>
 
     fun getMessagesForChatBeforeTime(
         chatId: Long,

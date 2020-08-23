@@ -32,7 +32,7 @@ class MessagesAdapter(
     val messages: ArrayList<Message> = arrayListOf(),
     val users: ArrayList<User> = arrayListOf(),
     var userId: Long = -1,
-    var listener: ((id: Long) -> Unit)? = {}
+    var listener: ((message: Message) -> Unit)? = {}
 ) : RecyclerView.Adapter<MessagesAdapter.ViewHolder>() {
 
     enum class MessagesAdapter {
@@ -128,7 +128,7 @@ class MessagesAdapter(
 
     fun delete(messages: List<Message>) {
         messages.forEach { m ->
-            val pos = this.messages.indexOfFirst { it.id == m.id }
+            val pos = this.messages.indexOf(m)
             if (pos == -1) return
             this.messages.removeAt(pos)
             notifyItemRemoved(pos)
@@ -181,7 +181,7 @@ class MessagesAdapter(
     @RequiresApi(Build.VERSION_CODES.M)
     class FromViewHolder(
         private val binding: MessageFromMeBinding,
-        private val listener: ((id: Long) -> Unit)?
+        private val listener: ((message: Message) -> Unit)?
     ) : ViewHolder(binding.root) {
 
         override fun bind(
@@ -197,7 +197,7 @@ class MessagesAdapter(
                 menu.forEach {
                     it.setOnMenuItemClickListener { item ->
                         when (item.itemId) {
-                            R.id.action_delete_message -> listener?.let { it(message.id) }
+                            R.id.action_delete_message -> listener?.let { it(message) }
                         }
                         true
                     }
