@@ -22,6 +22,26 @@
     <string name="add_participants">Add participants</string>
     <string name="home">Home</string>
     <string name="profile">Profile</string>
+    <string name="do_you_really_want_to_logout">Do you really want to logout?</string>
+    <string name="bye">Bye!</string>
+    <string name="empty_email_field">Empty email field</string>
+    <string name="bad_email_address">Bad email address</string>
+    <string name="empty_password_field">Empty password field</string>
+    <string name="empty_confirm_password_field">Empty confirm password field</string>
+    <string name="password_and_confirm_password_are_not_equal">Password and confirm password are not equal</string>
+    <string name="empty_nickname_field">Empty nickname field</string>
+    <string name="empty_name_field">Empty name field</string>
+    <string name="empty_surname_field">Empty surname field</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="registration">Registration</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="nickname">Nickname</string>
+    <string name="name">Name</string>
+    <string name="surname">Surname</string>
+    <string name="register">register</string>
+    <string name="choose_users">Choose users</string>
 
 
 </resources>

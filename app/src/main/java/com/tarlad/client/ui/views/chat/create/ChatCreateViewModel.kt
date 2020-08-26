@@ -25,12 +25,11 @@ class ChatCreateViewModel(
 
     var searchUsersDisposable: Disposable? = null
 
-    var page = -1
+    var page = 0
 
     fun search(q: String) {
         val userId = appSession.userId ?: return
-        page++
-        searchUsersDisposable = usersRepo.searchUsers(q, userId, page)
+        searchUsersDisposable = usersRepo.searchUsers(q, userId, page++)
             .ioMain()
             .subscribe(
                 { users.value = it },
@@ -39,14 +38,13 @@ class ChatCreateViewModel(
     }
 
     fun createChat(users: ArrayList<Long>) {
-        val token = appSession.token ?: return
         val userId = appSession.userId ?: return
         if (users.size == 0) {
             error.value = "Choose users"
             return
         }
         val chatCreator = ChatCreator(users)
-        chatsRepo.createChat(userId, token, chatCreator)
+        chatsRepo.createChat(userId, chatCreator)
             .ioMain()
             .subscribe(
                 { openChat.value = it },

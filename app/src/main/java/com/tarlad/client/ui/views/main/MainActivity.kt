@@ -70,12 +70,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun showLogoutAlertDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Logout")
-            .setMessage("Do you really want to logout?")
+            .setTitle(getString(R.string.logout))
+            .setMessage(getString(R.string.do_you_really_want_to_logout))
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setPositiveButton(android.R.string.yes) { _, _ ->
                 vm.logout()
-                Toast.makeText(this, "Bye!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.bye), Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton(android.R.string.no, null).show()
     }
@@ -93,10 +93,7 @@ class MainActivity : AppCompatActivity() {
                     startActivity(intent)
                     finish()
                 }
-                AppStates.Authenticated -> {
-                }
-                else -> {
-                }
+                else -> { }
             }
         })
     }

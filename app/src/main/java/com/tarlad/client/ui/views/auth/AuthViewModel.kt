@@ -4,11 +4,14 @@ import android.app.Application
 import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import com.tarlad.client.App
 import com.tarlad.client.AppSession
+import com.tarlad.client.R
 import com.tarlad.client.helpers.ioMain
 import com.tarlad.client.models.db.User
 import com.tarlad.client.models.dto.LoginCredentials
 import com.tarlad.client.repos.AuthRepo
+import com.tarlad.client.repos.MainRepo
 import com.tarlad.client.states.AppStates
 import com.tarlad.client.states.AuthState
 import com.tarlad.client.states.Register
@@ -24,15 +27,32 @@ class AuthViewModel(
     application: Application,
     private val socket: Socket,
     val appSession: AppSession,
-    private val authRepo: AuthRepo
+    private val authRepo: AuthRepo,
+    private val mainRepo: MainRepo
 ) : AndroidViewModel(application) {
+
+    val loginEmail = MutableLiveData<String>()
+    val loginPassword = MutableLiveData<String>()
+
+    val registerEmail = MutableLiveData<String>()
+    val registerPassword = MutableLiveData<String>()
+    val registerConfirmPassword = MutableLiveData<String>()
+    val registerNickname = MutableLiveData<String>()
+    val registerName = MutableLiveData<String>()
+    val registerSurname = MutableLiveData<String>()
 
     val state = MutableLiveData(AuthState.Login)
     val progressVisibility = MutableLiveData(View.GONE)
     val error = MutableLiveData<String>()
 
-    val registerEmail = MutableLiveData(Register.Empty)
-    val registerNickname = MutableLiveData(Register.Empty)
+    val registerEmailState = MutableLiveData(Register.Empty)
+    val registerNicknameState = MutableLiveData(Register.Empty)
+
+    val emailProgress = MutableLiveData(false)
+    val emailStatus = MutableLiveData(false)
+
+    val nicknameProgress = MutableLiveData(false)
+    val nicknameStatus = MutableLiveData(false)
 
     var checkEmailDisposable: Disposable? = null
     var checkNicknameDisposable: Disposable? = null
@@ -40,10 +60,10 @@ class AuthViewModel(
     fun checkEmail(email: String) {
         checkEmailDisposable = authRepo.checkEmail(email)
             .ioMain()
-            .doOnSubscribe { registerEmail.value = Register.Loading }
+            .doOnSubscribe { registerEmailState.value = Register.Loading }
             .subscribe(
-                { registerEmail.value = Register.Ok },
-                { registerEmail.value = Register.Error }
+                { registerEmailState.value = Register.Ok },
+                { registerEmailState.value = Register.Error }
             )
     }
 
@@ -56,86 +76,88 @@ class AuthViewModel(
     fun checkNickname(nickname: String) {
         checkNicknameDisposable = authRepo.checkNickname(nickname)
             .ioMain()
-            .doOnSubscribe { registerNickname.value = Register.Loading }
+            .doOnSubscribe { registerNicknameState.value = Register.Loading }
             .subscribe(
-                { registerNickname.value = Register.Ok },
-                { registerNickname.value = Register.Error }
+                { registerNicknameState.value = Register.Ok },
+                { registerNicknameState.value = Register.Error }
             )
     }
 
     private fun checkRegister(
-        email: String,
-        password: String,
-        confirmPassword: String,
-        nickname: String,
-        name: String,
-        surname: String
+        email: String?,
+        password: String?,
+        confirmPassword: String?,
+        nickname: String?,
+        name: String?,
+        surname: String?
     ): Boolean {
-        if (email.isEmpty()) {
-            error.value = "Empty email field"
+        if (email.isNullOrEmpty()) {
+            error.value = getApplication<App>().getString(R.string.empty_email_field)
             return false
         }
 
         if (!isEmailMatchRegex(email)) {
-            error.value = "Bad email address"
+            error.value = getApplication<App>().getString(R.string.bad_email_address)
             return false
         }
 
-        if (password.isEmpty()) {
-            error.value = "Empty password field"
+        if (password.isNullOrEmpty()) {
+            error.value = getApplication<App>().getString(R.string.empty_password_field)
             return false
         }
 
-        if (confirmPassword.isEmpty()) {
-            error.value = "Empty confirm password field"
+        if (confirmPassword.isNullOrEmpty()) {
+            error.value = getApplication<App>().getString(R.string.empty_confirm_password_field)
             return false
         }
 
         if (password != confirmPassword) {
-            error.value = "Password and confirm password not equal"
+            error.value = getApplication<App>().getString(R.string.password_and_confirm_password_are_not_equal)
             return false
         }
 
-        if (nickname.isEmpty()) {
-            error.value = "Empty nickname field"
+        if (nickname.isNullOrEmpty()) {
+            error.value = getApplication<App>().getString(R.string.empty_nickname_field)
             return false
         }
 
-        if (name.isEmpty()) {
-            error.value = "Empty name field"
+        if (name.isNullOrEmpty()) {
+            error.value = getApplication<App>().getString(R.string.empty_name_field)
             return false
         }
 
-        if (surname.isEmpty()) {
-            error.value = "Empty surname field"
+        if (surname.isNullOrEmpty()) {
+            error.value = getApplication<App>().getString(R.string.empty_surname_field)
             return false
         }
         return true
     }
 
-    fun register(
-        email: String,
-        password: String,
-        confirmPassword: String,
-        nickname: String,
-        name: String,
-        surname: String
-    ) {
+    fun register() {
+        val email = registerEmail.value
+        val password = registerPassword.value
+        val confirmPassword = registerConfirmPassword.value
+        val nickname = registerNickname.value
+        val name = registerName.value
+        val surname = registerSurname.value
         if (!checkRegister(email, password, confirmPassword, nickname, name, surname)) return
         val user = User(
             -1,
             email,
             password,
-            nickname,
-            name,
-            surname,
+            nickname!!,
+            name!!,
+            surname!!,
             null
         )
         authRepo.register(user)
+            .doOnSuccess { mainRepo.truncate() }
             .doOnSuccess { authRepo.saveToken(it.refreshToken) }
             .ioMain()
             .doOnSubscribe { progressVisibility.value = View.VISIBLE }
-            .doOnTerminate { progressVisibility.value = View.GONE }
+            .doOnTerminate {
+                progressVisibility.value = View.GONE
+            }
             .subscribe(
                 {
                     appSession.userId = it.refreshToken.userId
@@ -146,28 +168,31 @@ class AuthViewModel(
             )
     }
 
-    private fun checkLogin(email: String, password: String): Boolean {
-        if (email.isEmpty()) {
-            error.value = "Empty email field"
+    private fun checkLogin(email: String?, password: String?): Boolean {
+        if (email.isNullOrEmpty()) {
+            error.value = getApplication<App>().getString(R.string.empty_email_field)
             return false
         }
 
         if (!isEmailMatchRegex(email)) {
-            error.value = "Bad email address"
+            error.value = getApplication<App>().getString(R.string.bad_email_address)
             return false
         }
 
-        if (password.isEmpty()) {
-            error.value = "Empty password field"
+        if (password.isNullOrEmpty()) {
+            error.value = getApplication<App>().getString(R.string.empty_password_field)
             return false
         }
         return true
     }
 
-    fun login(email: String, password: String) {
+    fun login() {
+        val email = loginEmail.value
+        val password = loginPassword.value
         if (!checkLogin(email, password)) return
-        val loginInfo = LoginCredentials(email, password)
+        val loginInfo = LoginCredentials(email!!, password!!)
         authRepo.login(loginInfo)
+            .doOnSuccess { mainRepo.truncate() }
             .doOnSuccess { authRepo.saveToken(it.refreshToken) }
             .ioMain()
             .doOnSubscribe { progressVisibility.value = View.VISIBLE }
@@ -192,5 +217,13 @@ class AuthViewModel(
                     progressVisibility.value = View.GONE
                 }
             )
+    }
+
+    fun switchToRegistration() {
+        state.value = AuthState.Register
+    }
+
+    fun switchToLogin() {
+        state.value = AuthState.Login
     }
 }

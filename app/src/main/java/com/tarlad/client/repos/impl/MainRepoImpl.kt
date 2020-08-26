@@ -12,6 +12,7 @@ import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.dto.ChatLists
 import com.tarlad.client.models.dto.LastMessage
 import com.tarlad.client.repos.MainRepo
+import com.tarlad.client.ui.views.chat.Messages
 import com.tarlad.client.ui.views.main.Chats
 import io.reactivex.rxjava3.core.Observable
 import io.socket.client.Ack
@@ -44,7 +45,8 @@ class MainRepoImpl(
                 list.add(LastMessage(message.chatId, title, message, users))
             }
 
-            emitter.onNext(Pair(Chats.ADD, list))
+            if (list.isNotEmpty())
+                emitter.onNext(Pair(Chats.ADD, list))
             list = ArrayList()
 
             socket.emit("chats/messages/last", time, page, Ack {
@@ -52,6 +54,16 @@ class MainRepoImpl(
                     it[0].toString(),
                     object : TypeToken<List<LastMessage>>() {}.type
                 )
+
+                if (chats.isEmpty()) {
+                    if (cache.isEmpty()) {
+                        emitter.onNext(Pair(Chats.COMPLETE, listOf()))
+                        emitter.onComplete()
+                    } else {
+                        messageDao.deleteAll(cache)
+                    }
+                    return@Ack
+                }
 
                 chats.forEach { chat ->
                     messageDao.insert(chat.message)

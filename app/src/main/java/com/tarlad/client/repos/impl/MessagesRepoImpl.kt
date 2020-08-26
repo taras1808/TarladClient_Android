@@ -19,8 +19,6 @@ class MessagesRepoImpl(
     private val messageDao: MessageDao
 ) : MessagesRepo {
 
-    val map = HashMap<Message, Ack>()
-
     override fun sendMessage(
         messageCreator: MessageCreator,
         userId: Long
@@ -115,7 +113,7 @@ class MessagesRepoImpl(
             messageListener?.let { socket.off("message", it) }
             messageListener = Emitter.Listener {
                 val message: Message = Gson().fromJson(it[0].toString(), Message::class.java)
-                if (message.userId != userId)
+                if (message.chatId == chatId)
                     emitter.onNext(Pair(Messages.ADD, listOf(message)))
             }
             socket.on("message", messageListener)

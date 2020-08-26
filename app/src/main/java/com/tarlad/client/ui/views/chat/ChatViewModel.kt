@@ -10,6 +10,7 @@ import com.tarlad.client.models.db.User
 import com.tarlad.client.repos.MessagesRepo
 import com.tarlad.client.repos.UsersRepo
 import java.util.*
+import kotlin.collections.ArrayList
 
 class ChatViewModel(
     val appSession: AppSession,
@@ -18,7 +19,7 @@ class ChatViewModel(
 ): ViewModel() {
 
     val error = MutableLiveData<String>()
-    val messages = MutableLiveData<Pair<Messages, List<Message>>>()
+    val messages = MutableLiveData<ArrayList<Pair<Messages, List<Message>>>>(arrayListOf())
     val users = MutableLiveData<List<User>>()
     val time = Date().time
 
@@ -44,7 +45,10 @@ class ChatViewModel(
         messagesRepo.sendMessage(messageCreator, userId)
             .ioMain()
             .subscribe(
-                { messages.value = it },
+                {
+                    messages.value!!.add(it)
+                    messages.value = messages.value
+                },
                 { error.value = it.toString() }
             )
     }
@@ -53,7 +57,10 @@ class ChatViewModel(
         messagesRepo.getMessagesForChatBeforeTime(chatId, time, page++)
             .ioMain()
             .subscribe(
-                { messages.value = it },
+                {
+                    messages.value!!.add(it)
+                    messages.value = messages.value
+                },
                 { error.value = it.toString() }
             )
     }
@@ -63,7 +70,10 @@ class ChatViewModel(
         messagesRepo.observeMessages(chatId, userId)
             .ioMain()
             .subscribe(
-                { messages.value = it },
+                {
+                    messages.value!!.add(it)
+                    messages.value = messages.value
+                },
                 { error.value = it.toString() }
             )
     }
@@ -81,7 +91,10 @@ class ChatViewModel(
         messagesRepo.deleteMessage(message)
             .ioMain()
             .subscribe(
-                { messages.value = it },
+                {
+                    messages.value!!.add(it)
+                    messages.value = messages.value
+                },
                 { error.value = it.toString() }
             )
     }

@@ -1,8 +1,12 @@
 package com.tarlad.client.ui.views.chat.participants
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.tarlad.client.App
 import com.tarlad.client.AppSession
+import com.tarlad.client.R
 import com.tarlad.client.helpers.ioMain
 import com.tarlad.client.models.dto.ChatCreator
 import com.tarlad.client.models.db.User
@@ -12,10 +16,11 @@ import io.reactivex.rxjava3.disposables.Disposable
 import java.util.ArrayList
 
 class ChatAddParticipantsViewModel(
+    application: Application,
     private val usersRepo: UsersRepo,
     private val chatsRepo: ChatsRepo,
     private val appSession: AppSession
-): ViewModel() {
+): AndroidViewModel(application) {
 
     val error = MutableLiveData<String>()
     val users = MutableLiveData<List<User>>()
@@ -24,12 +29,10 @@ class ChatAddParticipantsViewModel(
 
     var searchUsersDisposable: Disposable? = null
 
-    var page = -1
+    var page = 0
 
     fun search(q: String, chatId: Long) {
-        val token = appSession.token ?: return
-        page++
-        searchUsersDisposable = usersRepo.searchUsersForChat(token, q, chatId, page)
+        searchUsersDisposable = usersRepo.searchUsersForChat(q, chatId, page++)
             .ioMain()
             .subscribe(
                 { users.value = it },
@@ -38,13 +41,12 @@ class ChatAddParticipantsViewModel(
     }
 
     fun addParticipants(chatId: Long, users: ArrayList<Long>) {
-        val token = appSession.token ?: return
         if (users.size == 0) {
-            error.value = "Choose users"
+            error.value = getApplication<App>().getString(R.string.choose_users)
             return
         }
         val chatCreator = ChatCreator(users)
-        chatsRepo.addParticipants(token, chatId, chatCreator)
+        chatsRepo.addParticipants(chatId, chatCreator)
             .ioMain()
             .subscribe(
                 { success.value = true },

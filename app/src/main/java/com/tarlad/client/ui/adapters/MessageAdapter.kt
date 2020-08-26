@@ -89,20 +89,24 @@ class MessagesAdapter(
     }
 
     fun add(messages: List<Message>) {
-        this.messages.addAll(messages)
-        this.messages.sortByDescending { it.time }
-
         messages.forEach {
-            val pos = this.messages.indexOf(it)
-            if (pos == -1) return
 
-            notifyItemInserted(pos)
+            if (!this.messages.contains(it)) {
 
-            if (pos > 0)
-                notifyItemChanged(pos - 1)
+                this.messages.add(it)
+                this.messages.sortByDescending { e -> e.time }
 
-            if (pos + 1 < this.messages.size - 1)
-                notifyItemChanged(pos + 1)
+                val pos = this.messages.indexOf(it)
+                if (pos == -1) return
+
+                notifyItemInserted(pos)
+
+                if (pos > 0)
+                    notifyItemChanged(pos - 1)
+
+                if (pos + 1 < this.messages.size - 1)
+                    notifyItemChanged(pos + 1)
+            }
         }
     }
 
@@ -128,7 +132,11 @@ class MessagesAdapter(
 
     fun delete(messages: List<Message>) {
         messages.forEach { m ->
-            val pos = this.messages.indexOf(m)
+            val pos =
+                if (m.id == -1L)
+                    this.messages.indexOf(m)
+                else
+                    this.messages.indexOfFirst { e -> e.id == m.id }
             if (pos == -1) return
             this.messages.removeAt(pos)
             notifyItemRemoved(pos)
@@ -142,16 +150,16 @@ class MessagesAdapter(
     }
 
     fun update(messages: List<Message>) {
-        this.messages.addAll(messages)
-        this.messages.sortByDescending { it.time }
 
         messages.forEach {
 
             val count = this.messages.count { e -> e.id == it.id }
 
-            if (count == 1) {
+            this.messages.add(it)
+            this.messages.sortByDescending { e -> e.time }
+
+            if (count == 0) {
                 val pos = this.messages.indexOf(it)
-                if (pos == -1) return
                 notifyItemInserted(pos)
                 if (pos + 1 < this.messages.size - 1)
                     notifyItemChanged(pos + 1)
@@ -192,17 +200,20 @@ class MessagesAdapter(
             showNickname: Boolean
         ) {
 
-            binding.root.message_block.setOnCreateContextMenuListener { menu, _, _ ->
-                MenuInflater(binding.root.context).inflate(R.menu.context_menu_messages, menu)
-                menu.forEach {
-                    it.setOnMenuItemClickListener { item ->
-                        when (item.itemId) {
-                            R.id.action_delete_message -> listener?.let { it(message) }
-                        }
-                        true
-                    }
-                }
+            binding.root.message_block.setOnClickListener {
+                listener?.let { it(message) }
             }
+//            binding.root.message_block.setOnCreateContextMenuListener { menu, _, _ ->
+//                MenuInflater(binding.root.context).inflate(R.menu.context_menu_messages, menu)
+//                menu.forEach {
+//                    it.setOnMenuItemClickListener { item ->
+//                        when (item.itemId) {
+//                            R.id.action_delete_message -> listener?.let { it(message) }
+//                        }
+//                        true
+//                    }
+//                }
+//            }
             binding.message = message
             binding.showDateTime = showDateTime
             binding.withMargin = withMargin
@@ -252,7 +263,7 @@ fun adaptTime(timeFrom: TextView, datetime: Long) {
 }
 
 @BindingAdapter("url")
-fun loadImage(imageView: CircleImageView, nickname: String) {
+fun loadImage(imageView: CircleImageView, nickname: String?) {
     Glide.with(imageView)
         .load("https://picsum.photos/" + (nickname.hashCode().absoluteValue % 100 + 100))
         .into(imageView)

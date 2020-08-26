@@ -22,8 +22,8 @@ import org.koin.core.parameter.parametersOf
 class AuthActivity : AppCompatActivity() {
 
     private val vm: AuthViewModel by viewModel { parametersOf(lifecycleScope.id) }
-    private val loginFragment by lifecycleScope.inject<LoginFragment>()
-    private val registerFragment by lifecycleScope.inject<RegisterFragment>()
+    private val loginFragment = LoginFragment()
+    private val registerFragment = RegisterFragment()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

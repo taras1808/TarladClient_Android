@@ -11,13 +11,12 @@ import org.koin.dsl.module
 
 val authModule = module {
     scope<AuthActivity> {
-        scoped { LoginFragment() }
-        scoped { RegisterFragment() }
     }
 
     viewModel {(_: ScopeID) ->
         AuthViewModel(
             androidApplication(),
+            get(),
             get(),
             get(),
             get()

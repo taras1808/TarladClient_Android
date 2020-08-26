@@ -11,24 +11,30 @@ import com.tarlad.client.models.dto.LastMessage
 import com.tarlad.client.models.dto.RefreshTokenDTO
 import com.tarlad.client.repos.AuthRepo
 import com.tarlad.client.repos.MainRepo
+import com.tarlad.client.repos.UsersRepo
 import com.tarlad.client.states.AppStates
 import io.reactivex.rxjava3.core.Single
 import io.socket.client.Socket
 import java.util.*
+import kotlin.collections.ArrayList
 
 class MainViewModel(
     private val socket: Socket,
     val appSession: AppSession,
     private val mainRepo: MainRepo,
-    private val authRepo: AuthRepo
+    private val authRepo: AuthRepo,
+    private val usersRepo: UsersRepo
 ): ViewModel() {
 
     val fragment = MutableLiveData(0)
 
     val title = MutableLiveData<String>()
 
+    val fullName = MutableLiveData<String>()
+    val imageUrl = MutableLiveData<String>()
+
     val error = MutableLiveData<String>()
-    val chats = MutableLiveData<Pair<Chats, List<LastMessage>>>()
+    val chats = MutableLiveData<ArrayList<Pair<Chats, List<LastMessage>>>>(arrayListOf())
     val openChat = MutableLiveData<Chat>()
 
     var page = 0L
@@ -40,7 +46,10 @@ class MainViewModel(
         mainRepo.getChats(userId, time, page++)
             .ioMain()
             .subscribe(
-                { chats.value = it },
+                {
+                    chats.value!!.add(it)
+                    chats.value = chats.value
+                },
                 { error.value = it.toString() }
             )
     }
@@ -50,7 +59,10 @@ class MainViewModel(
         mainRepo.observeChats(userId)
             .ioMain()
             .subscribe(
-                { chats.value = it },
+                {
+                    chats.value!!.add(it)
+                    chats.value = chats.value
+                },
                 { error.value = it.toString() }
             )
     }
@@ -67,7 +79,6 @@ class MainViewModel(
                     authRepo.logout(RefreshTokenDTO(refreshToken.value))
                         .doOnSuccess {
                             authRepo.removeToken(refreshToken)
-                            mainRepo.truncate()
                         }
                         .ioMain()
                         .doOnTerminate {
@@ -88,5 +99,19 @@ class MainViewModel(
             else -> return false
         }
         return true
+    }
+
+    fun loadProfile() {
+        val id = appSession.userId ?: return
+        usersRepo.loadProfile(id)
+            .ioMain()
+            .subscribe(
+                {
+                    title.value = it.nickname
+                    fullName.value = "${it.name} ${it.surname}"
+                    imageUrl.value = it.nickname
+                },
+                { error.value = it.toString() }
+            )
     }
 }

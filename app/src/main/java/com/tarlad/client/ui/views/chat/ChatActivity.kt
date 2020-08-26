@@ -1,11 +1,9 @@
 package com.tarlad.client.ui.views.chat
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -31,7 +29,8 @@ class ChatActivity : AppCompatActivity() {
     private val adapter = MessagesAdapter()
     private var chatId: Long = -1
 
-    @RequiresApi(Build.VERSION_CODES.N)
+    lateinit var binding: ActivityChatBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -39,8 +38,7 @@ class ChatActivity : AppCompatActivity() {
         chatId = intent.getLongExtra("ID",-1L)
         vm.title.value = title
 
-        val binding: ActivityChatBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_chat)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_chat)
         binding.vm = vm
         binding.lifecycleOwner = this
 
@@ -79,21 +77,26 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun observeMessages() {
-        vm.messages.observe(this, Observer { pair ->
-            val action = pair.first
-            val messages = pair.second
-            when (action) {
-                Messages.ADD -> adapter.add(messages)
-                Messages.REMOVE -> adapter.remove(messages)
-                Messages.DELETE -> adapter.delete(messages)
-                Messages.UPDATE -> adapter.update(messages)
-                Messages.REPLACE -> adapter.replace(messages)
-                Messages.COMPLETE -> messages_recycler.clearOnScrollListeners()
-                Messages.SEND -> {
-                    adapter.add(messages)
-                    messages_recycler.smoothScrollToPosition(0)
+        vm.messages.observe(this, Observer { list ->
+            list.forEach { pair ->
+
+                println(pair)
+                val action = pair.first
+                val messages = pair.second
+                when (action) {
+                    Messages.ADD -> adapter.add(messages)
+                    Messages.REMOVE -> adapter.remove(messages)
+                    Messages.DELETE -> adapter.delete(messages)
+                    Messages.UPDATE -> adapter.update(messages)
+                    Messages.REPLACE -> adapter.replace(messages)
+                    Messages.COMPLETE -> binding.messagesRecycler.clearOnScrollListeners()
+                    Messages.SEND -> {
+                        adapter.add(messages)
+                        binding.messagesRecycler.smoothScrollToPosition(0)
+                    }
                 }
             }
+            vm.messages.value!!.clear()
         })
     }
 
@@ -132,9 +135,9 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerView() {
-        messages_recycler.adapter = adapter
-        messages_recycler.itemAnimator = MessageItemAnimator()
-        messages_recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.messagesRecycler.adapter = adapter
+        binding.messagesRecycler.itemAnimator = MessageItemAnimator()
+        binding.messagesRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 val totalItemCount = messages_recycler.layoutManager!!.itemCount
