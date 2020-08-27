@@ -32,7 +32,7 @@ class ChatsRepoImpl(
                 val chatLists = Gson().fromJson(it[0].toString(), ChatLists::class.java)
 
                 chatDao.insert(Chat(chatLists.id, chatLists.title))
-                chatCreator.data.toMutableList().apply { add(userId) }.forEach {
+                chatCreator.data.toMutableList().forEach {
                     chatListDao.insert(ChatList(chatLists.id, it))
                 }
                 val title = chatLists.title ?: chatLists.users
@@ -49,11 +49,12 @@ class ChatsRepoImpl(
         chatId: Long,
         chatCreator: ChatCreator
     ): Single<Unit> {
-        return Single.create {
+        return Single.create { emitter ->
             socket.emit("chats/users/add", chatId, chatCreator.data, Ack {
                 chatCreator.data.forEach {
                     chatListDao.insert(ChatList(chatId, it))
                 }
+                emitter.onSuccess(Unit)
             })
         }
     }

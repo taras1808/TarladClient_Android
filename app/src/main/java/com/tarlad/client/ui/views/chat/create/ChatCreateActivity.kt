@@ -55,7 +55,7 @@ class ChatCreateActivity : AppCompatActivity() {
                 adapter.notifyDataSetChanged()
                 adapter.listener = { vm.search(q) }
                 vm.searchUsersDisposable?.dispose()
-                vm.page = -1
+                vm.page = 0
                 vm.search(q)
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

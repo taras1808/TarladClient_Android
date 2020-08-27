@@ -11,11 +11,16 @@ interface UserDao {
     @Query("SELECT * FROM user WHERE id == :id")
     fun getById(id: Long): User?
 
+//    @Query("SELECT user.* FROM user JOIN chatList ON user.id = chatList.user_id JOIN chat ON chat.id = chatList.chat_id WHERE chat.id == :id")
+//    fun getUserFromChat(id: Long): List<User>
+
     @Query("SELECT user.* FROM user JOIN chatList ON user.id = chatList.user_id JOIN chat ON chat.id = chatList.chat_id WHERE chat.id == :id")
     fun getUserFromChat(id: Long): Observable<List<User>>
 
     fun getDistinctUserFromChat(id: Long): Observable<List<User>>
             = getUserFromChat(id).distinctUntilChanged()
+
+
 
     @Query("SELECT * FROM user WHERE id <> :id LIMIT 10 OFFSET (:page * 10)")
     fun getAll(id: Long, page: Int): List<User>

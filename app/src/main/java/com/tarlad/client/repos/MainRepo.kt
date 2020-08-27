@@ -5,7 +5,7 @@ import com.tarlad.client.ui.views.main.Chats
 import io.reactivex.rxjava3.core.Observable
 
 interface MainRepo {
-    fun getChats(userId: Long, time: Long, page: Long): Observable<Pair<Chats, List<LastMessage>>>
-    fun observeChats(userId: Long): Observable<Pair<Chats, List<LastMessage>>>
+    fun getChats(time: Long, page: Long): Observable<Pair<Chats, List<LastMessage>>>
+    fun observeChats(): Observable<Pair<Chats, List<LastMessage>>>
     fun truncate()
 }

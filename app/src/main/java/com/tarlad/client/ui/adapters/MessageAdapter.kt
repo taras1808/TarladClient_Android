@@ -2,23 +2,19 @@ package com.tarlad.client.ui.adapters
 
 import android.os.Build
 import android.view.LayoutInflater
-import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.core.view.forEach
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.tarlad.client.R
-import com.tarlad.client.databinding.MessageFromMeBinding
-import com.tarlad.client.databinding.MessageToMeBinding
+import com.tarlad.client.databinding.ItemMessageFromMeBinding
+import com.tarlad.client.databinding.ItemMessageToMeBinding
 import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.db.User
 import de.hdodenhof.circleimageview.CircleImageView
-import kotlinx.android.synthetic.main.message_from_me.view.*
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.time.ZoneId
@@ -45,7 +41,7 @@ class MessagesAdapter(
         return when (viewType) {
             MessagesAdapter.FROM.ordinal ->
                 FromViewHolder(
-                    MessageFromMeBinding.inflate(
+                    ItemMessageFromMeBinding.inflate(
                         layoutInflater,
                         parent,
                         false
@@ -54,7 +50,7 @@ class MessagesAdapter(
                 )
             else ->
                 ToViewHolder(
-                    MessageToMeBinding.inflate(
+                    ItemMessageToMeBinding.inflate(
                         layoutInflater,
                         parent,
                         false
@@ -188,7 +184,7 @@ class MessagesAdapter(
 
     @RequiresApi(Build.VERSION_CODES.M)
     class FromViewHolder(
-        private val binding: MessageFromMeBinding,
+        private val binding: ItemMessageFromMeBinding,
         private val listener: ((message: Message) -> Unit)?
     ) : ViewHolder(binding.root) {
 
@@ -200,10 +196,10 @@ class MessagesAdapter(
             showNickname: Boolean
         ) {
 
-            binding.root.message_block.setOnClickListener {
+            binding.messageBlock.setOnClickListener {
                 listener?.let { it(message) }
             }
-//            binding.root.message_block.setOnCreateContextMenuListener { menu, _, _ ->
+//            binding.messageBlock.setOnCreateContextMenuListener { menu, _, _ ->
 //                MenuInflater(binding.root.context).inflate(R.menu.context_menu_messages, menu)
 //                menu.forEach {
 //                    it.setOnMenuItemClickListener { item ->
@@ -223,7 +219,7 @@ class MessagesAdapter(
     }
 
     class ToViewHolder(
-        private val binding: MessageToMeBinding,
+        private val binding: ItemMessageToMeBinding,
         val users: List<User>
     ) : ViewHolder(binding.root) {
 

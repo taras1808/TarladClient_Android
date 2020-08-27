@@ -42,8 +42,7 @@ class MainViewModel(
 
 
     fun getChats() {
-        val userId = appSession.userId ?: return
-        mainRepo.getChats(userId, time, page++)
+        mainRepo.getChats(time, page++)
             .ioMain()
             .subscribe(
                 {
@@ -55,8 +54,7 @@ class MainViewModel(
     }
 
     fun observeChats() {
-        val userId = appSession.userId ?: return
-        mainRepo.observeChats(userId)
+        mainRepo.observeChats()
             .ioMain()
             .subscribe(
                 {

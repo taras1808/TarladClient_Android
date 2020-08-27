@@ -1,39 +1,35 @@
 package com.tarlad.client.ui.adapters
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.tarlad.client.R
+import com.tarlad.client.databinding.ItemChatBinding
 import com.tarlad.client.models.db.Chat
 import com.tarlad.client.models.dto.LastMessage
-import kotlinx.android.synthetic.main.item_chat.view.*
 import java.util.*
-import kotlin.math.absoluteValue
 
 class MainAdapter(
     val chats: SortedSet<LastMessage> = sortedSetOf(Comparator { o1, o2 ->
-        o2.message.time.compareTo(
-            o1.message.time
-        )
+        o2.message.time.compareTo(o1.message.time)
     }), var listener: ((chat: Chat) -> Unit)? = null
-) :
-    RecyclerView.Adapter<MainAdapter.UserViewHolder>() {
+) : RecyclerView.Adapter<MainAdapter.ChatViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_chat, parent, false)
-        return UserViewHolder(
-            view,
-            listener
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
+        return ChatViewHolder(
+            ItemChatBinding.inflate(
+                layoutInflater,
+                parent,
+                false
+            ), listener
         )
     }
 
     override fun getItemCount(): Int = chats.size
 
-    override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
         val chat = chats.toList()[position]
-        holder.chat = chat
+        holder.bind(chat)
     }
 
     fun add(messages: List<LastMessage>) {
@@ -67,25 +63,21 @@ class MainAdapter(
         }
     }
 
-    class UserViewHolder(val view: View, listener: ((chat: Chat) -> Unit)?) :
-        RecyclerView.ViewHolder(view) {
+    class ChatViewHolder(
+        private val binding: ItemChatBinding,
+        private val listener: ((chat: Chat) -> Unit)?
+    ) :
+        RecyclerView.ViewHolder(binding.root) {
 
-        var chat: LastMessage? = null
-            set(value) {
-                field = value!!
 
-                view.title.text = "${value.title}"
-                view.last_message.text = "${value.message.data}"
-
-                Glide.with(view.context)
-                    .load("https://picsum.photos/" + (value.title.hashCode().absoluteValue % 100 + 100))
-                    .into(view.chat_image)
+        fun bind(lastMessage: LastMessage) {
+            binding.message = lastMessage.message
+            binding.title = lastMessage.title
+            binding.imageUrl = lastMessage.title
+            binding.root.setOnClickListener {
+                listener?.let { it(Chat(lastMessage.id, lastMessage.title)) }
             }
-
-        init {
-            view.setOnClickListener {
-                chat?.let { chat -> listener?.let { it(Chat(chat.id, chat.title)) } }
-            }
+            binding.executePendingBindings()
         }
     }
 }
