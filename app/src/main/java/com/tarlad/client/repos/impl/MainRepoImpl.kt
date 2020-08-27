@@ -2,6 +2,7 @@ package com.tarlad.client.repos.impl
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.tarlad.client.AppDatabase
 import com.tarlad.client.dao.ChatDao
 import com.tarlad.client.dao.ChatListDao
 import com.tarlad.client.dao.MessageDao
@@ -22,6 +23,7 @@ import io.socket.emitter.Emitter as EmitterIO
 
 class MainRepoImpl(
     private val socket: Socket,
+    private val database: AppDatabase,
     private val chatListDao: ChatListDao,
     private val userDao: UserDao,
     private val chatDao: ChatDao,
@@ -200,8 +202,9 @@ class MainRepoImpl(
         val chat = chatDao.getChatById(chatId) ?: return null
         val users = chatListDao.getUsersByChatId(chatId)
         if (users.isEmpty()) return null
-        val title = chat.title ?: users.map { e -> e.nickname }
-            .reduceRight { s, acc -> "$s, $acc" }
+        val title = chat.title ?:
+            users.map { e -> e.nickname }
+                .reduceRight { s, acc -> "$s, $acc" }
         return LastMessage(chat.id, title, message, users)
     }
 
@@ -228,7 +231,6 @@ class MainRepoImpl(
     }
 
     override fun truncate() {
-        messageDao.truncate()
-        chatDao.truncate()
+        database.clearAllTables()
     }
 }

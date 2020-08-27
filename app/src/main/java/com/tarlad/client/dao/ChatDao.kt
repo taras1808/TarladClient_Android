@@ -17,7 +17,4 @@ interface ChatDao {
 
     @Delete
     fun delete(chat: Chat?)
-
-    @Query("DELETE FROM chat")
-    fun truncate()
 }

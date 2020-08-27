@@ -34,7 +34,4 @@ interface MessageDao {
 
     @Delete
     fun deleteAll(messages: List<Message>)
-
-    @Query("DELETE FROM message")
-    fun truncate()
 }
