@@ -2,11 +2,14 @@ package com.tarlad.client.ui.views.chat.details
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import com.tarlad.client.R
+import com.tarlad.client.databinding.ActivityChatDetailsBinding
 import com.tarlad.client.ui.adapters.DetailsAdapter
 import com.tarlad.client.ui.views.chat.participants.ChatAddParticipantsActivity
 import kotlinx.android.synthetic.main.activity_chat_details.*
@@ -17,35 +20,44 @@ import org.koin.core.parameter.parametersOf
 
 class ChatDetailsActivity : AppCompatActivity() {
 
-    private val adapter =
-        DetailsAdapter(arrayListOf())
+    private val adapter = DetailsAdapter(arrayListOf())
 
     private val vm by viewModel<ChatDetailsViewModel> { parametersOf(lifecycleScope.id) }
 
+    var chatId: Long = -1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_chat_details)
-        setSupportActionBar(toolbar as Toolbar)
+
+        chatId = intent.getLongExtra("ID",-1L)
+        vm.title.value = "Details"
+
+        val binding: ActivityChatDetailsBinding = DataBindingUtil.setContentView(this, R.layout.activity_chat_details)
+        binding.vm = vm
+        binding.lifecycleOwner = this
+
+        setSupportActionBar(binding.toolbarInclude.toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
-//        toolbar.toolbar_title.text = "Details"
 
-        val chatId: Long = intent.getLongExtra("ID",-1L)
-
-        participants.adapter = adapter
+        binding.participantsRecycler.adapter = adapter
 
         vm.loadUsers(chatId)
 
+        observeUsers()
+    }
+
+    fun openAddParticipants(v: View) {
+        val intent = Intent(this, ChatAddParticipantsActivity::class.java)
+        intent.putExtra("ID", chatId)
+        startActivity(intent)
+    }
+
+    private fun observeUsers() {
         vm.users.observe(this , Observer {
             adapter.users.clear()
             adapter.users.addAll(it)
             adapter.notifyDataSetChanged()
         })
-
-        add_participants.setOnClickListener {
-            val intent = Intent(this, ChatAddParticipantsActivity::class.java)
-            intent.putExtra("ID", chatId)
-            startActivity(intent)
-        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

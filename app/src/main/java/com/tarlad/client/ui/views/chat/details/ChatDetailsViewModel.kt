@@ -12,6 +12,8 @@ class ChatDetailsViewModel(
     private val usersRepo: UsersRepo
 ): ViewModel() {
 
+    val title = MutableLiveData<String>()
+
     val error = MutableLiveData<String>()
     val users = MutableLiveData<List<User>>()
 

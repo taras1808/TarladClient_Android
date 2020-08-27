@@ -26,19 +26,17 @@ class ChatsRepoImpl(
     private val chatListDao: ChatListDao
 ) : ChatsRepo {
 
-    override fun createChat(userId: Long, chatCreator: ChatCreator): Single<Chat> {
+    override fun createChat(chatCreator: ChatCreator): Single<Chat> {
         return Single.create { emitter ->
             socket.emit("chats/add", chatCreator.data, Ack {
                 val chatLists = Gson().fromJson(it[0].toString(), ChatLists::class.java)
-
                 chatDao.insert(Chat(chatLists.id, chatLists.title))
                 chatCreator.data.toMutableList().forEach {
                     chatListDao.insert(ChatList(chatLists.id, it))
                 }
                 val title = chatLists.title ?: chatLists.users
-                            .filter { e -> e.id != userId }
-                            .map { e -> e.nickname }
-                            .reduceRight { s, acc -> "$s, $acc" }
+                    .map { e -> e.nickname }
+                    .reduceRight { s, acc -> "$s, $acc" }
 
                 emitter.onSuccess(Chat(chatLists.id, title))
             })

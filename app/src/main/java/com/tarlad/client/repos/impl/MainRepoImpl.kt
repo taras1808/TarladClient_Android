@@ -106,7 +106,6 @@ class MainRepoImpl(
                     val pair = Pair(Chats.ADD, listOf(lastMessage))
                     emitter.onNext(pair)
                 }
-
             }
             socket.on("message", addMessageListener)
 
@@ -153,8 +152,8 @@ class MainRepoImpl(
         cachedUsers: List<User>,
         emitter: Emitter<Pair<Chats, List<LastMessage>>>
     ) {
-        socket.emit("chats", chatId, Ack { array2 ->
-            val chatLists = Gson().fromJson(array2[0].toString(), ChatLists::class.java)
+        socket.emit("chats", chatId, Ack { array ->
+            val chatLists = Gson().fromJson(array[0].toString(), ChatLists::class.java)
             chatDao.insert(Chat(chatLists.id, chatLists.title))
             removeCachedUsersInChat(cachedUsers, chatLists.id)
             addUsersToChat(chatLists.users, chatLists.id)
@@ -184,12 +183,12 @@ class MainRepoImpl(
         emitter: Emitter<Pair<Chats, List<LastMessage>>>
     ) {
         socket.emit("messages/last", chatId, Ack { array ->
-            val loadedPreviousMessage = Gson().fromJson(array[0].toString(), Message::class.java)
-            if (loadedPreviousMessage.id == 0L) {
+            if (array[0] == null) {
                 val pair = Pair(Chats.DELETE, listOf(LastMessage(chatId, null, message, listOf())))
                 emitter.onNext(pair)
                 return@Ack
             }
+            val loadedPreviousMessage = Gson().fromJson(array[0].toString(), Message::class.java)
             messageDao.insert(loadedPreviousMessage)
             if (message.time < loadedPreviousMessage.time) return@Ack
             val lastMessage = buildLastMessage(chatId, loadedPreviousMessage) ?: return@Ack

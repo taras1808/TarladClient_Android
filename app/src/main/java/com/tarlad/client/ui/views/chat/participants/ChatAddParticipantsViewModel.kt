@@ -22,21 +22,28 @@ class ChatAddParticipantsViewModel(
     private val appSession: AppSession
 ): AndroidViewModel(application) {
 
+    val title = MutableLiveData<String>()
+
+    val search = MutableLiveData<String>()
+
+    val complete = MutableLiveData<Boolean>(false)
+
     val error = MutableLiveData<String>()
     val users = MutableLiveData<List<User>>()
     val success = MutableLiveData<Boolean>(false)
-
 
     var searchUsersDisposable: Disposable? = null
 
     var page = 0
 
-    fun search(q: String, chatId: Long) {
-        searchUsersDisposable = usersRepo.searchUsersForChat(q, chatId, page++)
+    fun search(chatId: Long) {
+        val userId = appSession.userId ?: return
+        searchUsersDisposable = usersRepo.searchUsersForChat(search.value ?: "", chatId, userId, page++)
             .ioMain()
             .subscribe(
                 { users.value = it },
-                { error.value = it.toString() }
+                { error.value = it.toString() },
+                { complete.value = true }
             )
     }
 

@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.tarlad.client.R
 import com.tarlad.client.models.db.User
-import kotlinx.android.synthetic.main.item_chat_create.view.*
+import kotlinx.android.synthetic.main.item_chat_details.view.*
 import kotlin.math.absoluteValue
 
 class DetailsAdapter(

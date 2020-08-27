@@ -42,6 +42,8 @@
     <string name="surname">Surname</string>
     <string name="register">register</string>
     <string name="choose_users">Choose users</string>
+    <string name="participants">Participants</string>
+    <string name="search">Search</string>
 
 
 </resources>

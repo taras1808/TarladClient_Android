@@ -29,7 +29,8 @@ class UsersRepoImpl(
             else
                 userDao.getByNickname(q, userId, page)
 
-            emitter.onNext(cache)
+            if (cache.isNotEmpty())
+                emitter.onNext(cache)
 
             if (q.isNotEmpty())
                 socket.emit("users/search", q, page, Ack {
@@ -37,27 +38,32 @@ class UsersRepoImpl(
                         it[0].toString(),
                         object : TypeToken<List<User>>() {}.type
                     )
+
                     userDao.deleteAll(cache)
                     userDao.insertAll(users)
+                    if (users.isEmpty() && cache.isEmpty()){
+                        emitter.onComplete()
+                        return@Ack
+                    }
                     emitter.onNext(users)
-                    emitter.onComplete()
                 })
-            else emitter.onComplete()
         }
     }
 
     override fun searchUsersForChat(
         q: String,
         chatId: Long,
+        userId: Long,
         page: Int
     ): Observable<List<User>> {
         return Observable.create { emitter ->
             val cache = if (q.isEmpty())
-                userDao.getAllForChat(chatId, page)
+                userDao.getAllForChat(chatId, page).filter { e -> e.id != userId }
             else
-                userDao.getByNicknameForChat(q, chatId, page)
+                userDao.getByNicknameForChat(q, chatId, page).filter { e -> e.id != userId }
 
-            emitter.onNext(cache)
+            if (cache.isNotEmpty())
+                emitter.onNext(cache)
 
             if (q.isNotEmpty())
                 socket.emit("chats/users/search", chatId, q, page, Ack {
@@ -67,10 +73,12 @@ class UsersRepoImpl(
                     )
                     userDao.deleteAll(cache)
                     userDao.insertAll(users)
+                    if (users.isEmpty() && cache.isEmpty()) {
+                        emitter.onComplete()
+                        return@Ack
+                    }
                     emitter.onNext(users)
-                    emitter.onComplete()
                 })
-            else emitter.onComplete()
         }
     }
 

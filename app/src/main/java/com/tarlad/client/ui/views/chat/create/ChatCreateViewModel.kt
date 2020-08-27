@@ -18,6 +18,12 @@ class ChatCreateViewModel(
     private val appSession: AppSession
 ): ViewModel() {
 
+    val title = MutableLiveData<String>()
+
+    val search = MutableLiveData<String>()
+
+    val complete = MutableLiveData<Boolean>(false)
+
     val error = MutableLiveData<String>()
     val users = MutableLiveData<List<User>>()
 
@@ -27,24 +33,24 @@ class ChatCreateViewModel(
 
     var page = 0
 
-    fun search(q: String) {
+    fun search() {
         val userId = appSession.userId ?: return
-        searchUsersDisposable = usersRepo.searchUsers(q, userId, page++)
+        searchUsersDisposable = usersRepo.searchUsers(search.value ?: "", userId, page++)
             .ioMain()
             .subscribe(
                 { users.value = it },
-                { error.value = it.toString() }
+                { error.value = it.toString() },
+                { complete.value = true }
             )
     }
 
     fun createChat(users: ArrayList<Long>) {
-        val userId = appSession.userId ?: return
         if (users.size == 0) {
             error.value = "Choose users"
             return
         }
         val chatCreator = ChatCreator(users)
-        chatsRepo.createChat(userId, chatCreator)
+        chatsRepo.createChat(chatCreator)
             .ioMain()
             .subscribe(
                 { openChat.value = it },

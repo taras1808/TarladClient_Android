@@ -20,12 +20,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 val appModule = module {
 
     single {
-        IO.socket("http://192.168.88.160:3000/")
+        IO.socket("http://192.168.88.254:3000/")
     }
 
     single {
         Retrofit.Builder()
-            .baseUrl("http://192.168.88.160:3000/")
+            .baseUrl("http://192.168.88.254:3000/")
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
             .build()

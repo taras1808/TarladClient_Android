@@ -2,17 +2,18 @@ package com.tarlad.client.ui.views.chat.create
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tarlad.client.R
+import com.tarlad.client.databinding.ActivityChatCreateBinding
 import com.tarlad.client.ui.adapters.UsersAdapter
 import com.tarlad.client.ui.views.chat.ChatActivity
 import kotlinx.android.synthetic.main.activity_chat_create.*
@@ -24,47 +25,66 @@ import org.koin.core.parameter.parametersOf
 class ChatCreateActivity : AppCompatActivity() {
 
     private val vm by viewModel<ChatCreateViewModel> { parametersOf(lifecycleScope.id) }
-    private val adapter =
-        UsersAdapter(arrayListOf())
+    private val adapter = UsersAdapter(arrayListOf()) { invalidateOptionsMenu() }
+    private lateinit var binding: ActivityChatCreateBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_chat_create)
-        setSupportActionBar(toolbar as Toolbar)
-        supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
-//        toolbar.toolbar_title.text = getString(R.string.new_chat)
 
-//        observeRefreshing()
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_chat_create)
+        binding.vm = vm
+        binding.lifecycleOwner = this
+
+        setSupportActionBar(binding.toolbarInclude.toolbar)
+        supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
+
+        vm.title.value = getString(R.string.new_chat)
+
+        initRecyclerView()
+
         observeError()
         observeUsers()
+        observeSearch()
         observeOpenChat()
+        observeComplete()
 
-        recycler.adapter = adapter
+        vm.search()
+    }
 
-        vm.search("")
-        adapter.listener = { vm.search("") }
+    private fun observeComplete() {
+        vm.complete.observe(this, Observer {
+            if (it) binding.userRecycler.clearOnScrollListeners()
+        })
+    }
 
-//        swiperefresh.setOnRefreshListener {
-//            vm.refresh()
-//        }
+    private fun observeSearch() {
+        vm.search.observe(this, Observer {
+            adapter.users.clear()
+            vm.page = 0
+            vm.searchUsersDisposable?.dispose()
+            vm.search()
+            initRecyclerView()
+        })
+    }
 
-        search.addTextChangedListener(object: TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                val q = s.toString()
-                adapter.data.clear()
-                adapter.notifyDataSetChanged()
-                adapter.listener = { vm.search(q) }
-                vm.searchUsersDisposable?.dispose()
-                vm.page = 0
-                vm.search(q)
+    private fun initRecyclerView() {
+        binding.userRecycler.adapter = adapter
+        binding.userRecycler.clearOnScrollListeners()
+        binding.userRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val totalItemCount = binding.userRecycler.layoutManager!!.itemCount
+                val lastVisibleItem = (binding.userRecycler.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+                if (totalItemCount <= lastVisibleItem + 5)
+                    if (!vm.search.value.isNullOrEmpty())
+                        vm.search()
             }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_chat_create, menu)
+        if (adapter.selected.isNotEmpty())
+            menuInflater.inflate(R.menu.menu_chat_create, menu)
         return true
     }
 
@@ -77,13 +97,9 @@ class ChatCreateActivity : AppCompatActivity() {
 
     private fun observeUsers() {
         vm.users.observe(this , Observer {
-            if (adapter.data.containsAll(it)) {
-                adapter.listener = {}
-                return@Observer
-            }
-            val count = adapter.data.size
-            adapter.data.addAll(it)
-            adapter.notifyItemRangeInserted(count, count + it.size)
+            adapter.users.removeAll(it)
+            adapter.users.addAll(it)
+            adapter.notifyDataSetChanged()
         })
     }
 
@@ -98,12 +114,6 @@ class ChatCreateActivity : AppCompatActivity() {
             }
         })
     }
-
-//    private fun observeRefreshing() {
-//        vm.refreshing.observe(this, Observer {
-//            swiperefresh.isRefreshing = it
-//        })
-//    }
 
     private fun observeError() {
         vm.error.observe(this, Observer {

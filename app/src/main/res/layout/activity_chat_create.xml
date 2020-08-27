@@ -1,42 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/create_chat_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+<layout>
 
-    <include android:id="@+id/toolbar" layout="@layout/toolbar" />
+    <data>
+        <variable
+            name="vm"
+            type="com.tarlad.client.ui.views.chat.create.ChatCreateViewModel" />
+    </data>
 
-    <EditText
-        android:id="@+id/search"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@null"
-        android:ems="10"
-        android:hint="Search"
-        android:inputType="textPersonName"
-        android:padding="16dp"
-        android:textColor="@color/black"
-        android:textColorHighlight="@color/colorAccent"
-        android:textColorHint="@color/editText"
-        android:textColorLink="@color/colorAccent" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/create_chat_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:overScrollMode="never"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        android:orientation="vertical">
 
-</LinearLayout>
+        <include app:title="@{vm.title}" android:id="@+id/toolbarInclude" layout="@layout/toolbar" />
 
+        <EditText
+            android:id="@+id/search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:ems="10"
+            android:hint="@string/search"
+            android:inputType="textPersonName"
+            android:padding="16dp"
+            android:text="@={vm.search}"
+            android:textColor="@color/black"
+            android:textColorHighlight="@color/colorAccent"
+            android:textColorHint="@color/editText"
+            android:textColorLink="@color/colorAccent"/>
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/user_recycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
+    </LinearLayout>
 
-<!--<androidx.swiperefreshlayout.widget.SwipeRefreshLayout-->
-<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    android:id="@+id/swiperefresh"-->
-<!--    android:layout_width="match_parent"-->
-<!--    android:layout_height="match_parent">-->
-<!--</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>-->
+</layout>
