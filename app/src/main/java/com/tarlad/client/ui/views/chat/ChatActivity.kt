@@ -150,6 +150,7 @@ class ChatActivity : AppCompatActivity() {
 
     private fun initAdapter() {
         adapter.userId = vm.appSession.userId ?: -1
-        adapter.listener = { message -> vm.deleteMessage(message) }
+        adapter.deleteListener = { message -> vm.deleteMessage(message) }
+        adapter.editListener = { message -> vm.editMessage(message) }
     }
 }

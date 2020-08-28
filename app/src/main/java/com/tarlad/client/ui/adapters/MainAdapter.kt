@@ -33,8 +33,10 @@ class MainAdapter(
     }
 
     fun add(messages: List<LastMessage>) {
-        messages.forEach { lastMessage ->
+        for (lastMessage in messages) {
             val posRemove = chats.indexOfFirst { e -> e.id == lastMessage.id }
+            if (chats.filter { e -> e.id == lastMessage.id }
+                    .firstOrNull { e -> e.message.time > lastMessage.message.time } != null) continue
             chats.removeAll { e -> e.id == lastMessage.id }
             chats.add(lastMessage)
             val posAdd = chats.indexOf(lastMessage)

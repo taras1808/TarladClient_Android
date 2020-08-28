@@ -14,6 +14,8 @@ interface MessagesRepo {
 
     fun deleteMessage(message: Message): Single<Pair<Messages, List<Message>>>
 
+    fun editMessage(mes: Message, message: Message): Single<Pair<Messages, List<Message>>>
+
     fun getMessagesForChatBeforeTime(
         chatId: Long,
         time: Long,

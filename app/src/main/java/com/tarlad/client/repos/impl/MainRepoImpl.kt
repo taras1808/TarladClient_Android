@@ -31,6 +31,7 @@ class MainRepoImpl(
 ) : MainRepo {
 
     private var addMessageListener: EmitterIO.Listener? = null
+    private var updateMessageListener: EmitterIO.Listener? = null
     private var deleteMessageListener: EmitterIO.Listener? = null
     private var addParticipantsListener: EmitterIO.Listener? = null
 
@@ -110,6 +111,9 @@ class MainRepoImpl(
                 }
             }
             socket.on("message", addMessageListener)
+
+            addMessageListener?.let { socket.off("message/update", it) }
+            socket.on("message/update", addMessageListener)
 
             deleteMessageListener?.let { socket.off("del", it) }
             deleteMessageListener = EmitterIO.Listener { array ->

@@ -2,14 +2,17 @@ package com.tarlad.client.ui.adapters
 
 import android.os.Build
 import android.view.LayoutInflater
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.core.view.forEach
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.tarlad.client.R
 import com.tarlad.client.databinding.ItemMessageFromMeBinding
 import com.tarlad.client.databinding.ItemMessageToMeBinding
 import com.tarlad.client.models.db.Message
@@ -28,7 +31,8 @@ class MessagesAdapter(
     val messages: ArrayList<Message> = arrayListOf(),
     val users: ArrayList<User> = arrayListOf(),
     var userId: Long = -1,
-    var listener: ((message: Message) -> Unit)? = {}
+    var deleteListener: ((message: Message) -> Unit)? = {},
+    var editListener: ((message: Message) -> Unit)? = {}
 ) : RecyclerView.Adapter<MessagesAdapter.ViewHolder>() {
 
     enum class MessagesAdapter {
@@ -46,7 +50,8 @@ class MessagesAdapter(
                         parent,
                         false
                     ),
-                    listener
+                    deleteListener,
+                    editListener
                 )
             else ->
                 ToViewHolder(
@@ -151,16 +156,22 @@ class MessagesAdapter(
 
             val count = this.messages.count { e -> e.id == it.id }
 
-            this.messages.add(it)
-            this.messages.sortByDescending { e -> e.time }
 
             if (count == 0) {
+                this.messages.add(it)
+                this.messages.sortByDescending { e -> e.time }
                 val pos = this.messages.indexOf(it)
                 notifyItemInserted(pos)
                 if (pos + 1 < this.messages.size - 1)
                     notifyItemChanged(pos + 1)
                 if (pos > 0)
                     notifyItemChanged(pos - 1)
+            } else {
+                if (!this.messages.contains(it)) {
+                    val pos = this.messages.indexOfFirst { e -> e.id == it.id }
+                    this.messages[pos] = it
+                    notifyItemChanged(pos)
+                }
             }
         }
     }
@@ -185,7 +196,8 @@ class MessagesAdapter(
     @RequiresApi(Build.VERSION_CODES.M)
     class FromViewHolder(
         private val binding: ItemMessageFromMeBinding,
-        private val listener: ((message: Message) -> Unit)?
+        private val deleteListener: ((message: Message) -> Unit)?,
+        private val editListener: ((message: Message) -> Unit)?
     ) : ViewHolder(binding.root) {
 
         override fun bind(
@@ -195,21 +207,21 @@ class MessagesAdapter(
             withMargin: Boolean,
             showNickname: Boolean
         ) {
-
-            binding.messageBlock.setOnClickListener {
-                listener?.let { it(message) }
-            }
-//            binding.messageBlock.setOnCreateContextMenuListener { menu, _, _ ->
-//                MenuInflater(binding.root.context).inflate(R.menu.context_menu_messages, menu)
-//                menu.forEach {
-//                    it.setOnMenuItemClickListener { item ->
-//                        when (item.itemId) {
-//                            R.id.action_delete_message -> listener?.let { it(message) }
-//                        }
-//                        true
-//                    }
-//                }
-//            }
+            if (message.id > 0)
+                binding.messageBlock.setOnCreateContextMenuListener { menu, _, _ ->
+                    MenuInflater(binding.root.context).inflate(R.menu.context_menu_messages, menu)
+                    menu.forEach {
+                        it.setOnMenuItemClickListener { item ->
+                            when (item.itemId) {
+                                R.id.action_delete_message -> deleteListener?.let { it(message) }
+                                R.id.action_edit_message -> editListener?.let { it(message) }
+                            }
+                            true
+                        }
+                    }
+                }
+            else
+                binding.messageBlock.setOnCreateContextMenuListener { menu, _, _ -> menu.clear() }
             binding.message = message
             binding.showDateTime = showDateTime
             binding.withMargin = withMargin

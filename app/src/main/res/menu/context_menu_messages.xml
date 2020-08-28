@@ -6,4 +6,9 @@
 
     </item>
 
+    <item android:id="@+id/action_edit_message"
+        android:title="Edit">
+
+    </item>
+
 </menu>

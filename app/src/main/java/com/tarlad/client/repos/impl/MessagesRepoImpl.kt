@@ -19,6 +19,10 @@ class MessagesRepoImpl(
     private val messageDao: MessageDao
 ) : MessagesRepo {
 
+    private var messageListener: Emitter.Listener? = null
+    private var updateMessageListener: Emitter.Listener? = null
+    private var delListener: Emitter.Listener? = null
+
     override fun sendMessage(
         messageCreator: MessageCreator,
         userId: Long
@@ -40,26 +44,31 @@ class MessagesRepoImpl(
             )
 
             emitter.onNext(Pair(Messages.SEND, listOf(mes)))
-
             socket.emit("messages", message, Ack {
                 val sentMessage: Message = Gson().fromJson(it[0].toString(), Message::class.java)
                 messageDao.insert(sentMessage)
+                messageDao.delete(mes)
                 emitter.onNext(Pair(Messages.REPLACE, listOf(mes, sentMessage)))
                 emitter.onComplete()
             })
+
         }
     }
 
     override fun deleteMessage(message: Message): Single<Pair<Messages, List<Message>>> {
         return Single.create { emitter ->
-            emitter.onSuccess(
-                Pair(
-                    Messages.DELETE,
-                    listOf(message)
-                )
-            )
-            if (message.id != -1L)
-                socket.emit("messages/delete", message.id)
+            emitter.onSuccess(Pair(Messages.DELETE, listOf(message)))
+            socket.emit("messages/delete", message.id)
+        }
+    }
+
+    override fun editMessage(mes: Message, message: Message): Single<Pair<Messages, List<Message>>> {
+        return Single.create { emitter ->
+            socket.emit("messages/edit", message.id, message.data, Ack {
+                val editedMessage: Message = Gson().fromJson(it[0].toString(), Message::class.java)
+                messageDao.insert(editedMessage)
+                emitter.onSuccess(Pair(Messages.REPLACE, listOf(mes, editedMessage)))
+            })
         }
     }
 
@@ -86,6 +95,7 @@ class MessagesRepoImpl(
                         emitter.onComplete()
                     } else {
                         messageDao.deleteAll(cache)
+                        emitter.onNext(Pair(Messages.DELETE, cache))
                     }
                     return@Ack
                 }
@@ -101,9 +111,6 @@ class MessagesRepoImpl(
         }
     }
 
-    private var messageListener: Emitter.Listener? = null
-    private var delListener: Emitter.Listener? = null
-
     override fun observeMessages(
         chatId: Long,
         userId: Long
@@ -117,6 +124,14 @@ class MessagesRepoImpl(
                     emitter.onNext(Pair(Messages.ADD, listOf(message)))
             }
             socket.on("message", messageListener)
+
+            updateMessageListener?.let { socket.off("message/update", it) }
+            updateMessageListener = Emitter.Listener {
+                val message: Message = Gson().fromJson(it[0].toString(), Message::class.java)
+                if (message.chatId == chatId)
+                    emitter.onNext(Pair(Messages.UPDATE, listOf(message)))
+            }
+            socket.on("message/update", updateMessageListener)
 
             delListener?.let { socket.off("del", it) }
             delListener = Emitter.Listener {

@@ -20,6 +20,7 @@ import com.tarlad.client.ui.views.auth.AuthActivity
 import com.tarlad.client.ui.views.chat.ChatActivity
 import com.tarlad.client.ui.views.main.fragments.HomeFragment
 import com.tarlad.client.ui.views.main.fragments.ProfileFragment
+import io.reactivex.rxjava3.core.Observable
 import kotlinx.android.synthetic.main.activity_main.*
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel

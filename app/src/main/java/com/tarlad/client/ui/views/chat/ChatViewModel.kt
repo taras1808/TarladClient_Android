@@ -16,7 +16,7 @@ class ChatViewModel(
     val appSession: AppSession,
     private val usersRepo: UsersRepo,
     private val messagesRepo: MessagesRepo
-): ViewModel() {
+) : ViewModel() {
 
     val error = MutableLiveData<String>()
     val messages = MutableLiveData<ArrayList<Pair<Messages, List<Message>>>>(arrayListOf())
@@ -25,7 +25,10 @@ class ChatViewModel(
 
     val title = MutableLiveData<String>()
 
+    val isEdit = MutableLiveData<Boolean>(false)
+
     val message = MutableLiveData<String>()
+    val editMessage = MutableLiveData<Message>()
     var chatId: Long = -1
 
     var page = 0L
@@ -97,5 +100,39 @@ class ChatViewModel(
                 },
                 { error.value = it.toString() }
             )
+    }
+
+    fun editMessage(message: Message) {
+        this.message.value = message.data
+        editMessage.value = message
+        isEdit.value = true
+    }
+
+    fun editMessage() {
+        if (editMessage.value == null) return
+        val mes = editMessage.value!!
+
+        if (message.value.isNullOrEmpty()) {
+            deleteMessage(mes)
+            stopEditing()
+            return
+        }
+
+        messagesRepo.editMessage(mes, Message(mes.id, mes.chatId, mes.userId, mes.type, message.value!!, mes.time))
+            .ioMain()
+            .subscribe(
+                {
+                    messages.value!!.add(it)
+                    messages.value = messages.value
+                    stopEditing()
+                },
+                { error.value = it.toString() }
+            )
+    }
+
+    fun stopEditing() {
+        editMessage.value = null
+        isEdit.value = false
+        message.value = ""
     }
 }

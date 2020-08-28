@@ -44,6 +44,9 @@
     <string name="choose_users">Choose users</string>
     <string name="participants">Participants</string>
     <string name="search">Search</string>
+    <string name="send">Send</string>
+    <string name="edit">Edit</string>
+    <string name="editing">Editing:</string>
 
 
 </resources>
