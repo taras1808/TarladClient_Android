@@ -24,31 +24,22 @@ class MessagesRepoImpl(
     private var delListener: Emitter.Listener? = null
 
     override fun sendMessage(
-        messageCreator: MessageCreator,
+        message: Message,
         userId: Long
     ): Observable<Pair<Messages, List<Message>>> {
         return Observable.create { emitter ->
-            val message = JSONObject()
-            message.put("chatId", messageCreator.chatId)
-            message.put("data", messageCreator.data)
-            message.put("type", messageCreator.type)
-            message.put("time", messageCreator.time)
+            val data = JSONObject()
+            data.put("chatId", message.chatId)
+            data.put("data", message.data)
+            data.put("type", message.type)
+            data.put("time", message.time)
 
-            val mes = Message(
-                -1,
-                messageCreator.chatId,
-                userId,
-                messageCreator.type,
-                messageCreator.data,
-                messageCreator.time
-            )
-
-            emitter.onNext(Pair(Messages.SEND, listOf(mes)))
-            socket.emit("messages", message, Ack {
+            emitter.onNext(Pair(Messages.SEND, listOf(message)))
+            socket.emit("messages", data, Ack {
                 val sentMessage: Message = Gson().fromJson(it[0].toString(), Message::class.java)
                 messageDao.insert(sentMessage)
-                messageDao.delete(mes)
-                emitter.onNext(Pair(Messages.REPLACE, listOf(mes, sentMessage)))
+                messageDao.delete(message)
+                emitter.onNext(Pair(Messages.REPLACE, listOf(message, sentMessage)))
                 emitter.onComplete()
             })
 

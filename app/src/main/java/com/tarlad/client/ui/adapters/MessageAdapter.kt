@@ -1,5 +1,8 @@
 package com.tarlad.client.ui.adapters
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.MenuInflater
@@ -24,7 +27,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.math.absoluteValue
 
 
 class MessagesAdapter(
@@ -209,12 +211,17 @@ class MessagesAdapter(
         ) {
             if (message.id > 0)
                 binding.messageBlock.setOnCreateContextMenuListener { menu, _, _ ->
-                    MenuInflater(binding.root.context).inflate(R.menu.context_menu_messages, menu)
+                    MenuInflater(binding.root.context).inflate(R.menu.context_menu_messages_from, menu)
                     menu.forEach {
                         it.setOnMenuItemClickListener { item ->
                             when (item.itemId) {
                                 R.id.action_delete_message -> deleteListener?.let { it(message) }
                                 R.id.action_edit_message -> editListener?.let { it(message) }
+                                R.id.action_copy_message -> {
+                                    val clipboard = binding.root.context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("", message.data)
+                                    clipboard.setPrimaryClip(clip)
+                                }
                             }
                             true
                         }
@@ -247,10 +254,28 @@ class MessagesAdapter(
             binding.showDateTime = showDateTime
             binding.withMargin = withMargin
             binding.showNickname = showNickname
+            binding.imageUrl = users.find { e -> e.id == message.userId }?.imageURL
             if (users.isNotEmpty())
                 binding.setNickname(users.find { user -> user.id == message.userId }?.nickname)
             else
                 binding.setNickname("")
+
+            binding.messageBlockTo.setOnCreateContextMenuListener { menu, _, _ ->
+                MenuInflater(binding.root.context).inflate(R.menu.context_menu_messages_to, menu)
+                menu.forEach {
+                    it.setOnMenuItemClickListener { item ->
+                        when (item.itemId) {
+                            R.id.action_copy_message -> {
+                                val clipboard = binding.root.context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                val clip = ClipData.newPlainText("", message.data)
+                                clipboard.setPrimaryClip(clip)
+                            }
+                        }
+                        true
+                    }
+                }
+            }
+
             binding.executePendingBindings()
         }
     }
@@ -271,10 +296,16 @@ fun adaptTime(timeFrom: TextView, datetime: Long) {
 }
 
 @BindingAdapter("url")
-fun loadImage(imageView: CircleImageView, nickname: String?) {
-    Glide.with(imageView)
-        .load("https://picsum.photos/" + (nickname.hashCode().absoluteValue % 100 + 100))
-        .into(imageView)
+fun loadImage(imageView: CircleImageView, url: String?) {
+
+    if (url.isNullOrEmpty())
+        Glide.with(imageView)
+            .load(R.drawable.ic_baseline_person_24)
+            .into(imageView)
+    else
+        Glide.with(imageView)
+            .load(url)
+            .into(imageView)
 }
 
 @BindingAdapter("withMargin", "showDateTime", "showNickname")

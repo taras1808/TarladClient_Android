@@ -1,27 +1,20 @@
 package com.tarlad.client.repos.impl
 
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import com.tarlad.client.api.ChatsApi
 import com.tarlad.client.dao.ChatDao
 import com.tarlad.client.dao.ChatListDao
-import com.tarlad.client.helpers.ioIo
 import com.tarlad.client.models.db.Chat
 import com.tarlad.client.models.dto.ChatCreator
 import com.tarlad.client.models.db.ChatList
 import com.tarlad.client.models.dto.ChatLists
-import com.tarlad.client.models.dto.LastMessage
 import com.tarlad.client.repos.ChatsRepo
-import hu.akarnokd.rxjava3.bridge.RxJavaBridge
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.socket.client.Ack
 import io.socket.client.Socket
-import retrofit2.http.Header
-import java.lang.Exception
 
 class ChatsRepoImpl(
     private val socket: Socket,
-    private val chatsApi: ChatsApi,
     private val chatDao: ChatDao,
     private val chatListDao: ChatListDao
 ) : ChatsRepo {
@@ -30,15 +23,15 @@ class ChatsRepoImpl(
         return Single.create { emitter ->
             socket.emit("chats/add", chatCreator.data, Ack {
                 val chatLists = Gson().fromJson(it[0].toString(), ChatLists::class.java)
-                chatDao.insert(Chat(chatLists.id, chatLists.title))
+                chatDao.insert(Chat(chatLists.id, chatLists.title, chatLists.userId))
                 chatCreator.data.toMutableList().forEach {
                     chatListDao.insert(ChatList(chatLists.id, it))
                 }
-                val title = chatLists.title ?: chatLists.users
+                val title = chatLists.title ?: if (chatLists.users.isEmpty()) "" else chatLists.users
                     .map { e -> e.nickname }
                     .reduceRight { s, acc -> "$s, $acc" }
 
-                emitter.onSuccess(Chat(chatLists.id, title))
+                emitter.onSuccess(Chat(chatLists.id, title, chatLists.userId))
             })
         }
     }
@@ -56,4 +49,18 @@ class ChatsRepoImpl(
             })
         }
     }
+
+    override fun getAdminFromChat(chatId: Long): Observable<Long> {
+        return Observable.create { emitter ->
+            val admin = chatDao.getAdmin(chatId) ?: return@create
+            emitter.onNext(admin)
+        }
+    }
+
+    override fun removeParticipant(chatId: Long, userId: Long) {
+        socket.emit("chats/users/delete", chatId, userId, Ack {
+            chatListDao.delete(ChatList(chatId, userId))
+        })
+    }
+
 }

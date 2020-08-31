@@ -4,8 +4,6 @@ import androidx.room.Room
 import com.tarlad.client.AppDatabase
 import com.tarlad.client.AppSession
 import com.tarlad.client.api.AuthApi
-import com.tarlad.client.api.ChatsApi
-import com.tarlad.client.api.UsersApi
 import com.tarlad.client.helpers.Preferences
 import com.tarlad.client.repos.*
 import com.tarlad.client.repos.impl.*
@@ -49,12 +47,11 @@ val appModule = module {
     single { Preferences(androidContext()) }
 
     single<AuthRepo> { AuthRepoImpl(get(), get()) }
-    single<UsersRepo> { UsersRepoImpl(get(), get(), get()) }
-    single<ChatsRepo> { ChatsRepoImpl(get(), get(), get(), get()) }
+    single<UsersRepo> { UsersRepoImpl(get(), get()) }
+    single<ChatsRepo> { ChatsRepoImpl(get(), get(), get()) }
     single<MessagesRepo> { MessagesRepoImpl(get(), get()) }
     single<MainRepo> { MainRepoImpl(get(), get(), get(), get(), get(), get()) }
+    single<ImageRepo> { ImageRepoImpl(get(), get(), get()) }
 
     single { get<Retrofit>().create(AuthApi::class.java) }
-    single { get<Retrofit>().create(ChatsApi::class.java) }
-    single { get<Retrofit>().create(UsersApi::class.java) }
 }

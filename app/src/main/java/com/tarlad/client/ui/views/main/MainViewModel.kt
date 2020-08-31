@@ -3,18 +3,23 @@ package com.tarlad.client.ui.views.main
 import android.view.MenuItem
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.gson.Gson
 import com.tarlad.client.AppSession
 import com.tarlad.client.R
 import com.tarlad.client.helpers.ioMain
 import com.tarlad.client.models.db.Chat
+import com.tarlad.client.models.db.User
 import com.tarlad.client.models.dto.LastMessage
 import com.tarlad.client.models.dto.RefreshTokenDTO
 import com.tarlad.client.repos.AuthRepo
+import com.tarlad.client.repos.ImageRepo
 import com.tarlad.client.repos.MainRepo
 import com.tarlad.client.repos.UsersRepo
 import com.tarlad.client.states.AppStates
 import io.reactivex.rxjava3.core.Single
+import io.socket.client.Ack
 import io.socket.client.Socket
+import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -23,7 +28,8 @@ class MainViewModel(
     val appSession: AppSession,
     private val mainRepo: MainRepo,
     private val authRepo: AuthRepo,
-    private val usersRepo: UsersRepo
+    private val usersRepo: UsersRepo,
+    private val imageRepo: ImageRepo
 ): ViewModel() {
 
     val fragment = MutableLiveData(0)
@@ -107,9 +113,17 @@ class MainViewModel(
                 {
                     title.value = it.nickname
                     fullName.value = "${it.name} ${it.surname}"
-                    imageUrl.value = it.nickname
+                    imageUrl.value = it.imageURL
                 },
                 { error.value = it.toString() }
             )
+    }
+
+    fun sendImage(data: String) {
+        imageRepo.saveImage(data)
+    }
+
+    fun removeImage() {
+        imageRepo.removeImage()
     }
 }

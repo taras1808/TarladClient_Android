@@ -17,9 +17,9 @@ import java.util.ArrayList
 
 class ChatAddParticipantsViewModel(
     application: Application,
+    private val appSession: AppSession,
     private val usersRepo: UsersRepo,
-    private val chatsRepo: ChatsRepo,
-    private val appSession: AppSession
+    private val chatsRepo: ChatsRepo
 ): AndroidViewModel(application) {
 
     val title = MutableLiveData<String>()

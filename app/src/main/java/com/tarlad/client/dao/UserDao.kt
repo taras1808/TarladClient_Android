@@ -11,6 +11,9 @@ interface UserDao {
     @Query("SELECT * FROM user WHERE id == :id")
     fun getById(id: Long): User?
 
+    @Query("SELECT * FROM user WHERE id == :id")
+    fun getObservableById(id: Long): Observable<User?>
+
 //    @Query("SELECT user.* FROM user JOIN chatList ON user.id = chatList.user_id JOIN chat ON chat.id = chatList.chat_id WHERE chat.id == :id")
 //    fun getUserFromChat(id: Long): List<User>
 

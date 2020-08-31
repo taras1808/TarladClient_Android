@@ -73,11 +73,11 @@ class MainAdapter(
 
 
         fun bind(lastMessage: LastMessage) {
-            binding.message = lastMessage.message
+            binding.message = "${lastMessage.users.find { e -> e.id == lastMessage.message.userId}?.nickname ?: "you"}: ${lastMessage.message.data}"
             binding.title = lastMessage.title
-            binding.imageUrl = lastMessage.title
+            binding.imageUrl = lastMessage.users.find { e -> e.id == lastMessage.message.userId}?.imageURL ?: ""
             binding.root.setOnClickListener {
-                listener?.let { it(Chat(lastMessage.id, lastMessage.title)) }
+                listener?.let { it(Chat(lastMessage.id, lastMessage.title, lastMessage.userId)) }
             }
             binding.executePendingBindings()
         }

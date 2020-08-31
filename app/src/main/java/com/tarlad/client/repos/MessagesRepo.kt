@@ -7,10 +7,7 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
 interface MessagesRepo {
-    fun sendMessage(
-        messageCreator: MessageCreator,
-        userId: Long
-    ): Observable<Pair<Messages, List<Message>>>
+    fun sendMessage(message: Message, userId: Long): Observable<Pair<Messages, List<Message>>>
 
     fun deleteMessage(message: Message): Single<Pair<Messages, List<Message>>>
 

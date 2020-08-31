@@ -84,8 +84,13 @@ class MainRepoImpl(
 
             for (chat in chats) {
                 val cachedUsers = chatListDao.getUsersByChatId(chat.id)
-                saveData(Chat(chat.id, chat.title), chat.message, cachedUsers, chat.users)
-                val lastMessage = buildLastMessage(chat.id,  chat.message) ?: continue
+                saveData(
+                    Chat(chat.id, chat.title, chat.userId),
+                    chat.message,
+                    cachedUsers,
+                    chat.users
+                )
+                val lastMessage = buildLastMessage(chat.id, chat.message) ?: continue
                 list.add(lastMessage)
             }
 
@@ -147,7 +152,7 @@ class MainRepoImpl(
     ) {
         socket.emit("chats", chatId, Ack { array ->
             val chatLists = Gson().fromJson(array[0].toString(), ChatLists::class.java)
-            saveData(Chat(chatLists.id, chatLists.title), null, null, chatLists.users)
+            saveData(Chat(chatLists.id, chatLists.title, chatLists.userId), null, null, chatLists.users)
             val lastMessage = buildLastMessage(chatLists.id, message) ?: return@Ack
             emitter.onNext(Pair(Chats.ADD, listOf(lastMessage)))
         })
@@ -160,7 +165,7 @@ class MainRepoImpl(
     ) {
         socket.emit("chats", chatId, Ack { array ->
             val chatLists = Gson().fromJson(array[0].toString(), ChatLists::class.java)
-            chatDao.insert(Chat(chatLists.id, chatLists.title))
+            chatDao.insert(Chat(chatLists.id, chatLists.title, chatLists.userId))
             removeCachedUsersInChat(cachedUsers, chatLists.id)
             addUsersToChat(chatLists.users, chatLists.id)
             userDao.insertAll(chatLists.users)
@@ -190,7 +195,7 @@ class MainRepoImpl(
     ) {
         socket.emit("messages/last", chatId, Ack { array ->
             if (array[0] == null) {
-                val pair = Pair(Chats.DELETE, listOf(LastMessage(chatId, null, message, listOf())))
+                val pair = Pair(Chats.DELETE, listOf(LastMessage(chatId, null, -1, message, listOf())))
                 emitter.onNext(pair)
                 return@Ack
             }
@@ -205,11 +210,10 @@ class MainRepoImpl(
     private fun buildLastMessage(chatId: Long, message: Message): LastMessage? {
         val chat = chatDao.getChatById(chatId) ?: return null
         val users = chatListDao.getUsersByChatId(chatId)
-        if (users.isEmpty()) return null
-        val title = chat.title ?:
+        val title = chat.title ?: if (users.isEmpty()) "" else
             users.map { e -> e.nickname }
                 .reduceRight { s, acc -> "$s, $acc" }
-        return LastMessage(chat.id, title, message, users)
+        return LastMessage(chat.id, title, chat.userId, message, users)
     }
 
     private fun saveData(chat: Chat?, message: Message?, cachedUsers: List<User>?, users: List<User>?){

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
         <variable
             name="vm"
             type="com.tarlad.client.ui.views.main.MainViewModel" />
+
     </data>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -30,6 +30,7 @@
                 android:layout_width="200dp"
                 android:layout_height="200dp"
                 android:background="@drawable/shadow"
+                android:src="@drawable/ic_baseline_person_24"
                 app:url="@{vm.imageUrl}"
                 app:civ_border_color="#FFFFFF"
                 app:civ_border_overlay="true"

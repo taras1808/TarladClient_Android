@@ -1,16 +1,9 @@
 <resources>
     <string name="app_name">Tarlad</string>
     <string name="done">Done</string>
-    <string name="title_activity_chat">ChatActivity</string>
 
     <string name="token_key">token</string>
     <string name="user_key">user</string>
-    <string name="title_activity_chat_details">ChatDetailsActivity</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
@@ -47,6 +40,14 @@
     <string name="send">Send</string>
     <string name="edit">Edit</string>
     <string name="editing">Editing:</string>
+    <string name="delete">Delete</string>
+    <string name="copy">Copy</string>
+    <string name="admin">admin</string>
+    <string name="cancel">Cancel</string>
+    <string name="select_image">Select image</string>
+    <string name="delete_image">Delete image</string>
+    <string name="take_photo">Take photo</string>
+    <string name="delete_participant">Delete participant</string>
 
 
 </resources>

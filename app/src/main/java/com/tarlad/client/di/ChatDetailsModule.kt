@@ -13,6 +13,7 @@ val chatDetailsModule = module {
     viewModel { (_: ScopeID) ->
         ChatDetailsViewModel(
             get(),
+            get(),
             get()
         )
     }

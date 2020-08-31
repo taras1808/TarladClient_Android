@@ -12,6 +12,9 @@ interface ChatDao {
     @Query("SELECT * FROM chat WHERE id == :id")
     fun getChatById(id: Long): Chat?
 
+    @Query("SELECT chat.user_id FROM chat WHERE id == :id")
+    fun getAdmin(id: Long): Long?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(chat: Chat)
 

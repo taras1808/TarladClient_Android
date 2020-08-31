@@ -23,6 +23,9 @@
         <variable
             name="nickname"
             type="java.lang.String"/>
+        <variable
+            name="imageUrl"
+            type="java.lang.String"/>
     </data>
     <LinearLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -58,7 +61,7 @@
                 android:layout_height="24dp"
                 android:layout_gravity="bottom"
                 android:layout_margin="8dp"
-                app:url="@{nickname}"
+                app:url="@{imageUrl}"
                 android:visibility="@{showImage ? View.VISIBLE : View.INVISIBLE}"/>
 
             <LinearLayout

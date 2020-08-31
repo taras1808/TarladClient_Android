@@ -1,7 +1,11 @@
 package com.tarlad.client.ui.views.chat
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBar
@@ -35,8 +39,10 @@ class ChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val title = intent.getStringExtra("TITLE")
-        chatId = intent.getLongExtra("ID",-1L)
+        chatId = intent.getLongExtra("ID", -1L)
         vm.title.value = title
+
+
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_chat)
         binding.vm = vm
@@ -55,6 +61,7 @@ class ChatActivity : AppCompatActivity() {
         observeMessages()
 
 
+
         vm.chatId = chatId
         vm.getUsers(chatId)
         vm.observeMessages(chatId)
@@ -62,11 +69,9 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun observeUsers() {
-        vm.users.observe(this , Observer {
+        vm.users.observe(this, Observer { users ->
             adapter.users.clear()
-            adapter.users.addAll(it)
-
-            val users = adapter.users.filter { e -> e.id != vm.appSession.userId }
+            adapter.users.addAll(users)
 
             vm.title.value =
                 if (users.isNotEmpty())
@@ -79,8 +84,6 @@ class ChatActivity : AppCompatActivity() {
     private fun observeMessages() {
         vm.messages.observe(this, Observer { list ->
             list.forEach { pair ->
-
-                println(pair)
                 val action = pair.first
                 val messages = pair.second
                 when (action) {
@@ -141,7 +144,8 @@ class ChatActivity : AppCompatActivity() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 val totalItemCount = messages_recycler.layoutManager!!.itemCount
-                val lastVisibleItem = (messages_recycler.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+                val lastVisibleItem =
+                    (messages_recycler.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
                 if (totalItemCount <= lastVisibleItem + 5)
                     vm.getMessages(chatId)
             }

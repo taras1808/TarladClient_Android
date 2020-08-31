@@ -36,16 +36,18 @@ class ChatViewModel(
     fun sendMessage() {
         if (message.value.isNullOrEmpty()) return
         val userId = appSession.userId ?: return
-        val messageCreator = MessageCreator(
+        val message = Message(
+            -1,
             chatId,
+            userId,
             "text",
             message.value!!.trim(),
             Date().time
         )
 
-        message.value = ""
+        this.message.value = ""
 
-        messagesRepo.sendMessage(messageCreator, userId)
+        messagesRepo.sendMessage(message, userId)
             .ioMain()
             .subscribe(
                 {
@@ -114,6 +116,11 @@ class ChatViewModel(
 
         if (message.value.isNullOrEmpty()) {
             deleteMessage(mes)
+            stopEditing()
+            return
+        }
+
+        if (message.value == mes.data) {
             stopEditing()
             return
         }

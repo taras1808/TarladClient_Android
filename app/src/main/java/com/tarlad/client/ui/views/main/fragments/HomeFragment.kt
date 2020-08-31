@@ -1,5 +1,6 @@
 package com.tarlad.client.ui.views.main.fragments
 
+import android.Manifest
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -46,7 +47,6 @@ class HomeFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-
         vm.title.value = getString(R.string.app_name)
     }
 

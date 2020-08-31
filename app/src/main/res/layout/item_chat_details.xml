@@ -1,48 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/SelectableItemBackground"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:clickable="true"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:padding="16dp"
-    android:focusable="true">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/imageURL"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        app:srcCompat="@android:drawable/btn_star_big_on" />
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="isAdmin"
+            type="java.lang.Boolean"/>
+
+        <variable
+            name="isControl"
+            type="java.lang.Boolean"/>
+
+        <variable
+            name="user"
+            type="com.tarlad.client.models.db.User"/>
+    </data>
 
     <LinearLayout
-        android:id="@+id/user_data_container"
-        android:layout_width="0dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imageURL"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:url="@{user.imageURL}"
+            android:src="@drawable/ic_baseline_person_24"/>
+
+        <LinearLayout
+            android:id="@+id/user_data_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/nickname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:text="@{user.nickname}"/>
+
+            <TextView
+                android:id="@+id/full_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/editText"
+                android:textSize="18sp"
+                android:text="@{user.name + ' ' + user.surname}"/>
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+
+            android:src="@drawable/dots"
+            android:background="@drawable/small_ripple"
+            android:visibility="@{isControl ? View.VISIBLE : View.GONE}" />
 
         <TextView
-            android:id="@+id/nickname"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textColor="@color/black"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/full_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
+            android:id="@+id/admin"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/admin"
             android:textColor="@color/editText"
-            android:textSize="18sp" />
+            android:visibility="@{isAdmin ? View.VISIBLE : View.GONE}"/>
 
     </LinearLayout>
-
-</LinearLayout>
+</layout>
