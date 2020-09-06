@@ -1,4 +1,4 @@
-package com.tarlad.client.ui.adapters;
+package com.tarlad.client.ui.animators;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;

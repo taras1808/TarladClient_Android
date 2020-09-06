@@ -1,6 +1,5 @@
 package com.tarlad.client.ui.views.main.fragments
 
-import android.Manifest
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,22 +7,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tarlad.client.R
 import com.tarlad.client.databinding.FragmentHomeBinding
 import com.tarlad.client.models.db.Chat
-import com.tarlad.client.ui.adapters.MainAdapter
-import com.tarlad.client.ui.views.main.Chats
+import com.tarlad.client.ui.adapters.ChatsAdapter
+import com.tarlad.client.enums.Chats
 import com.tarlad.client.ui.views.main.MainViewModel
 import kotlinx.android.synthetic.main.fragment_home.*
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
 class HomeFragment : Fragment() {
 
-    val vm: MainViewModel by activityViewModels()
-    val adapter = MainAdapter()
+    val vm: MainViewModel by sharedViewModel()
+    lateinit var adapter: ChatsAdapter
 
     lateinit var binding: FragmentHomeBinding
 
@@ -51,7 +50,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun observeChats() {
-        vm.chats.observe(requireActivity(), Observer { list ->
+        vm.chats.observe(viewLifecycleOwner, Observer { list ->
             list.forEach { pair ->
                 val action = pair.first
                 val messages = pair.second
@@ -66,6 +65,7 @@ class HomeFragment : Fragment() {
     }
     
     private fun initRecyclerView() {
+        adapter = ChatsAdapter(vm.savedChats)
         binding.chatsRecycler.adapter = adapter
         adapter.listener = { chat: Chat -> vm.openChat.value = chat }
         binding.chatsRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {

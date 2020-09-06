@@ -16,15 +16,30 @@ class ChatDetailsViewModel(
 
     val title = MutableLiveData<String>()
 
+
+    val chatTitle = MutableLiveData<String>()
+    val chatTitleSaved = MutableLiveData<String>()
+
     val error = MutableLiveData<String>()
     val users = MutableLiveData<List<User>>()
 
 
     val admin = MutableLiveData<Long>()
 
+    fun loadChatTitle(chatId: Long) {
+        chatsRepo.getTitle(chatId)
+            .ioMain()
+            .subscribe(
+                {
+                    chatTitle.value = it
+                    chatTitleSaved.value = it
+                },
+                { error.value = it.toString() }
+            )
+    }
+
     fun loadUsers(chatId: Long) {
-        val userId = appSession.userId ?: return
-        usersRepo.getAllUsersFromChat(chatId, userId)
+        usersRepo.getUsersFromChat(chatId)
             .ioMain()
             .subscribe(
                 { users.value = it },
@@ -43,5 +58,14 @@ class ChatDetailsViewModel(
 
     fun removeParticipant(chatId: Long, userId: Long) {
         chatsRepo.removeParticipant(chatId, userId)
+    }
+
+    fun changeTitle(chatId: Long) {
+        chatsRepo.saveTitle(chatId, chatTitle.value ?: "")
+            .ioMain()
+            .subscribe(
+                { chatTitleSaved.value = chatTitle.value },
+                { error.value = it.toString() }
+            )
     }
 }

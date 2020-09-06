@@ -101,10 +101,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeOpenChat() {
         vm.openChat.observe(this, Observer {
+            if (it == null) return@Observer
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("ID", it.id)
             intent.putExtra("TITLE", it.title)
             startActivity(intent)
+            vm.openChat.value = null
         })
     }
 
@@ -113,7 +115,7 @@ class MainActivity : AppCompatActivity() {
             val selectedFragment = when (it) {
                 0 -> homeFragment
                 1 -> profileFragment
-                else -> throw IllegalArgumentException()
+                else -> homeFragment
             }
             supportFragmentManager.beginTransaction()
                 .replace(R.id.container, selectedFragment)

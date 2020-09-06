@@ -3,20 +3,20 @@ package com.tarlad.client.ui.views.chat.details
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.tarlad.client.R
 import com.tarlad.client.databinding.ActivityChatDetailsBinding
-import com.tarlad.client.ui.adapters.DetailsAdapter
+import com.tarlad.client.ui.adapters.ChatDetailsAdapter
 import com.tarlad.client.ui.views.chat.participants.ChatAddParticipantsActivity
-import kotlinx.android.synthetic.main.activity_chat_details.*
 import kotlinx.android.synthetic.main.sheet_details.view.*
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -25,7 +25,7 @@ import org.koin.core.parameter.parametersOf
 
 class ChatDetailsActivity : AppCompatActivity() {
 
-    private val adapter = DetailsAdapter(arrayListOf())
+    private val adapter = ChatDetailsAdapter(arrayListOf())
 
     private val vm by viewModel<ChatDetailsViewModel> { parametersOf(lifecycleScope.id) }
 
@@ -50,11 +50,23 @@ class ChatDetailsActivity : AppCompatActivity() {
 
         adapter.userId = vm.appSession.userId
 
+        vm.loadChatTitle(chatId)
         vm.loadUsers(chatId)
         vm.loadAdmin(chatId)
 
         observeUsers()
         observeAdmin()
+
+        vm.chatTitle.observe(this, Observer {
+            invalidateOptionsMenu()
+        })
+
+        vm.chatTitleSaved.observe(this, Observer {
+            binding.chatTitle.clearFocus()
+            (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                .hideSoftInputFromWindow(binding.chatTitle.windowToken, 0)
+            invalidateOptionsMenu()
+        })
 
         adapter.listener = { id -> runOnUiThread { show(id) } }
     }
@@ -97,6 +109,19 @@ class ChatDetailsActivity : AppCompatActivity() {
             adapter.id = it
             adapter.notifyDataSetChanged()
         })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        if (vm.chatTitle.value != vm.chatTitleSaved.value)
+            menuInflater.inflate(R.menu.menu_chat_create, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.add_chat_ok -> vm.changeTitle(chatId)
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onSupportNavigateUp(): Boolean {

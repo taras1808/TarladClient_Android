@@ -48,6 +48,9 @@
     <string name="delete_image">Delete image</string>
     <string name="take_photo">Take photo</string>
     <string name="delete_participant">Delete participant</string>
+    <string name="chat_title">Chat title:</string>
+    <string name="add_title">Add title</string>
+    <string name="message">Message...</string>
 
 
 </resources>

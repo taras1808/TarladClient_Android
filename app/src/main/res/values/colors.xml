@@ -4,9 +4,14 @@
 <!--    <color name="colorPrimaryDark">#FFB152</color>-->
 <!--    <color name="colorAccent">#FFB152</color>-->
 
-    <color name="colorPrimary">#8EADE8</color>
-    <color name="colorPrimaryDark">#8EADE8</color>
-    <color name="colorAccent">#8EADE8</color>
+<!--    <color name="colorPrimary">#8EADE8</color>-->
+<!--    <color name="colorPrimaryDark">#8EADE8</color>-->
+<!--    <color name="colorAccent">#8EADE8</color>-->
+
+
+    <color name="colorPrimary">#9AC395</color>
+    <color name="colorPrimaryDark">#9AC395</color>
+    <color name="colorAccent">#9AC395</color>
 
     <color name="grayTransparent">#83555555</color>
     <color name="green">#64DD17</color>
@@ -28,4 +33,7 @@
 
     <color name="gray">#777777</color>
     <color name="grayLight">#EEEEEE</color>
+
+
+    <color name="blackTransparent">#90000000</color>
 </resources>

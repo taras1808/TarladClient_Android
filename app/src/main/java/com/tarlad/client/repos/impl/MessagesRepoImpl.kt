@@ -4,9 +4,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.tarlad.client.dao.MessageDao
 import com.tarlad.client.models.db.Message
-import com.tarlad.client.models.dto.MessageCreator
 import com.tarlad.client.repos.MessagesRepo
-import com.tarlad.client.ui.views.chat.Messages
+import com.tarlad.client.enums.Messages
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.socket.client.Ack
@@ -22,11 +21,9 @@ class MessagesRepoImpl(
     private var messageListener: Emitter.Listener? = null
     private var updateMessageListener: Emitter.Listener? = null
     private var delListener: Emitter.Listener? = null
+    override var time: Long = Long.MAX_VALUE
 
-    override fun sendMessage(
-        message: Message,
-        userId: Long
-    ): Observable<Pair<Messages, List<Message>>> {
+    override fun sendMessage(message: Message): Observable<Pair<Messages, List<Message>>> {
         return Observable.create { emitter ->
             val data = JSONObject()
             data.put("chatId", message.chatId)
@@ -38,7 +35,6 @@ class MessagesRepoImpl(
             socket.emit("messages", data, Ack {
                 val sentMessage: Message = Gson().fromJson(it[0].toString(), Message::class.java)
                 messageDao.insert(sentMessage)
-                messageDao.delete(message)
                 emitter.onNext(Pair(Messages.REPLACE, listOf(message, sentMessage)))
                 emitter.onComplete()
             })
@@ -64,17 +60,22 @@ class MessagesRepoImpl(
     }
 
     override fun getMessagesForChatBeforeTime(
-        chatId: Long,
-        time: Long,
-        page: Long
+        chatId: Long
     ): Observable<Pair<Messages, List<Message>>> {
         return Observable.create { emitter ->
-            val cache = messageDao.getMessagesForChatBeforeTime(chatId, time, page)
+
+            val cache = messageDao.getMessagesForChatBeforeTime(chatId, time)
 
             if (cache.isNotEmpty())
                 emitter.onNext(Pair(Messages.ADD, cache))
 
-            socket.emit("chats/messages/before", chatId, time, page, Ack {
+            socket.emit("chats/messages/before", chatId, time, Ack {
+
+                if (it.isEmpty()) {
+                    emitter.onComplete()
+                    return@Ack
+                }
+
                 val messages = Gson().fromJson<List<Message>>(
                     it[0].toString(),
                     object : TypeToken<List<Message>>() {}.type
@@ -92,6 +93,8 @@ class MessagesRepoImpl(
                 }
 
                 if (cache.size != messages.size || !cache.containsAll(messages)) {
+
+                    time = messages.minOf { e -> e.time }
                     messageDao.deleteAll(cache)
                     messageDao.insertAll(messages)
                     emitter.onNext(Pair(Messages.REMOVE, cache.subtract(messages).toList()))
@@ -99,6 +102,8 @@ class MessagesRepoImpl(
                     emitter.onComplete()
                 }
             })
+
+            time = cache.minOfOrNull { e -> e.time } ?: time
         }
     }
 
@@ -124,7 +129,7 @@ class MessagesRepoImpl(
             }
             socket.on("message/update", updateMessageListener)
 
-            delListener?.let { socket.off("del", it) }
+            delListener?.let { socket.off("message/delete", it) }
             delListener = Emitter.Listener {
                 emitter.onNext(
                     Pair(
@@ -133,7 +138,7 @@ class MessagesRepoImpl(
                     )
                 )
             }
-            socket.on("del", delListener)
+            socket.on("message/delete", delListener)
 
         }
     }

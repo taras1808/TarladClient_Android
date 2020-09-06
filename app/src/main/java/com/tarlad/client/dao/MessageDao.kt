@@ -18,8 +18,8 @@ interface MessageDao {
     @Query("SELECT * FROM message WHERE chat_id = :chatId ORDER BY time DESC LIMIT 1")
     fun getLastMessageForChat(chatId: Long): Message?
 
-    @Query("SELECT * FROM message WHERE chat_id = :chatId AND time < :time ORDER BY time DESC LIMIT 10 OFFSET (10 * :page)")
-    fun getMessagesForChatBeforeTime(chatId: Long, time: Long, page: Long): List<Message>
+    @Query("SELECT * FROM message WHERE chat_id = :chatId AND time < :time ORDER BY time DESC LIMIT 10")
+    fun getMessagesForChatBeforeTime(chatId: Long, time: Long): List<Message>
 
 
 

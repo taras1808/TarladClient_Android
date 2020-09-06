@@ -1,8 +1,11 @@
 package com.tarlad.client.repos.impl
 
 import com.google.gson.Gson
+import com.tarlad.client.AppSession
 import com.tarlad.client.dao.ChatDao
 import com.tarlad.client.dao.ChatListDao
+import com.tarlad.client.enums.Events
+import com.tarlad.client.helpers.getTitle
 import com.tarlad.client.models.db.Chat
 import com.tarlad.client.models.dto.ChatCreator
 import com.tarlad.client.models.db.ChatList
@@ -15,22 +18,19 @@ import io.socket.client.Socket
 
 class ChatsRepoImpl(
     private val socket: Socket,
+    private val appSession: AppSession,
     private val chatDao: ChatDao,
     private val chatListDao: ChatListDao
 ) : ChatsRepo {
 
     override fun createChat(chatCreator: ChatCreator): Single<Chat> {
         return Single.create { emitter ->
-            socket.emit("chats/add", chatCreator.data, Ack {
+            val userId = appSession.userId ?: return@create
+            socket.emit(Events.CHATS_CREATE, chatCreator.data, Ack {
                 val chatLists = Gson().fromJson(it[0].toString(), ChatLists::class.java)
                 chatDao.insert(Chat(chatLists.id, chatLists.title, chatLists.userId))
-                chatCreator.data.toMutableList().forEach {
-                    chatListDao.insert(ChatList(chatLists.id, it))
-                }
-                val title = chatLists.title ?: if (chatLists.users.isEmpty()) "" else chatLists.users
-                    .map { e -> e.nickname }
-                    .reduceRight { s, acc -> "$s, $acc" }
-
+                chatListDao.insert(chatLists.id, chatCreator.data.toMutableList().apply { add(userId) }.toList())
+                val title = getTitle(chatLists.title, chatLists.users, userId)
                 emitter.onSuccess(Chat(chatLists.id, title, chatLists.userId))
             })
         }
@@ -42,9 +42,8 @@ class ChatsRepoImpl(
     ): Single<Unit> {
         return Single.create { emitter ->
             socket.emit("chats/users/add", chatId, chatCreator.data, Ack {
-                chatCreator.data.forEach {
-                    chatListDao.insert(ChatList(chatId, it))
-                }
+                if (it.isEmpty()) return@Ack
+                chatListDao.insert(chatId, chatCreator.data)
                 emitter.onSuccess(Unit)
             })
         }
@@ -61,6 +60,22 @@ class ChatsRepoImpl(
         socket.emit("chats/users/delete", chatId, userId, Ack {
             chatListDao.delete(ChatList(chatId, userId))
         })
+    }
+
+    override fun getTitle(chatId: Long): Single<String> {
+        return Single.create { emitter ->
+            emitter.onSuccess(chatDao.getTitle(chatId) ?: "")
+        }
+    }
+
+    override fun saveTitle(chatId: Long, title: String): Single<Unit> {
+        return Single.create { emitter ->
+            socket.emit("chats/title", chatId, title, Ack {
+                val chat = Gson().fromJson(it[0].toString(), Chat::class.java)
+                chatDao.insert(chat)
+                emitter.onSuccess(Unit)
+            })
+        }
     }
 
 }

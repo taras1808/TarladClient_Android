@@ -14,6 +14,7 @@ val chatModule = module {
         ChatViewModel(
             get(),
             get(),
+            get(),
             get()
         )
     }

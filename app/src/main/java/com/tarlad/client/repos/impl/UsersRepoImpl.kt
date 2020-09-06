@@ -2,6 +2,7 @@ package com.tarlad.client.repos.impl
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.tarlad.client.AppSession
 import com.tarlad.client.dao.UserDao
 import com.tarlad.client.models.db.User
 import com.tarlad.client.repos.UsersRepo
@@ -11,6 +12,7 @@ import io.socket.client.Socket
 
 class UsersRepoImpl(
     private val socket: Socket,
+    private val appSession: AppSession,
     private val userDao: UserDao
 ) : UsersRepo {
 
@@ -45,14 +47,13 @@ class UsersRepoImpl(
     override fun searchUsersForChat(
         q: String,
         chatId: Long,
-        userId: Long,
         page: Int
     ): Observable<List<User>> {
         return Observable.create { emitter ->
             val cache = if (q.isEmpty())
-                userDao.getAllForChat(chatId, page).filter { e -> e.id != userId }
+                userDao.getAllForChat(chatId, page)
             else
-                userDao.getByNicknameForChat(q, chatId, page).filter { e -> e.id != userId }
+                userDao.getByNicknameForChat(q, chatId, page)
 
             if (cache.isNotEmpty())
                 emitter.onNext(cache)
@@ -74,20 +75,6 @@ class UsersRepoImpl(
         }
     }
 
-    override fun getAllUsersFromChat(chatId: Long, userId: Long): Observable<List<User>> {
-        return Observable.create { emitter ->
-            userDao.getDistinctUserFromChat(chatId)
-                .subscribe(
-                    { list ->
-                        val mutableList = list.toMutableList()
-                        userDao.getById(userId)?.let { user -> mutableList.add(user) }
-                        emitter.onNext(mutableList.sortedBy { e -> e.nickname })
-                    },
-                    { err -> emitter.onError(err) }
-                )
-        }
-    }
-
     override fun getUsersFromChat(chatId: Long): Observable<List<User>> {
         return Observable.create { emitter ->
             userDao.getDistinctUserFromChat(chatId)
@@ -102,11 +89,7 @@ class UsersRepoImpl(
         return Observable.create { emitter ->
 
             userDao.getObservableById(id)
-                .subscribe(
-                    { if (it != null) emitter.onNext(it) },
-                    {}
-                )
-
+                .subscribe({ if (it != null) emitter.onNext(it) }, {})
 
             socket.emit("users", id, Ack {
                 val user = Gson().fromJson(it[0].toString(), User::class.java)

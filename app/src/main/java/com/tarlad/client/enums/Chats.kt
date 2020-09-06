@@ -1,4 +1,4 @@
-package com.tarlad.client.ui.views.main
+package com.tarlad.client.enums
 
 enum class Chats {
     ADD, DELETE, COMPLETE

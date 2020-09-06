@@ -6,12 +6,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tarlad.client.databinding.ItemChatDetailsBinding
 import com.tarlad.client.models.db.User
 
-class DetailsAdapter(
+class ChatDetailsAdapter(
     val users: ArrayList<User>,
     var userId: Long? = null,
     var id: Long = -1,
     var listener: ((Long) -> Unit)? = null
-) : RecyclerView.Adapter<DetailsAdapter.UserViewHolder>() {
+) : RecyclerView.Adapter<ChatDetailsAdapter.UserViewHolder>() {
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {

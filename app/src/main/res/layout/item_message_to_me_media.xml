@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="message"
+            type="com.tarlad.client.models.db.Message"/>
+        <variable
+            name="showImage"
+            type="java.lang.Boolean"/>
+        <variable
+            name="showDateTime"
+            type="java.lang.Boolean"/>
+        <variable
+            name="withMargin"
+            type="java.lang.Boolean"/>
+        <variable
+            name="showNickname"
+            type="java.lang.Boolean"/>
+        <variable
+            name="nickname"
+            type="java.lang.String"/>
+        <variable
+            name="imageUrl"
+            type="java.lang.String"/>
+    </data>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        bind:withMargin="@{withMargin}"
+        bind:showDateTime="@{showDateTime}"
+        bind:showNickname="@{showNickname}">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:textAlignment="center"
+            android:textColor="@color/editText"
+            android:maxLines="1"
+            android:visibility="@{showDateTime ? View.VISIBLE : View.GONE}"
+            bind:datetime="@{message.time}"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="bottom"
+                android:layout_margin="8dp"
+                bind:url="@{imageUrl}"
+                android:visibility="@{showImage ? View.VISIBLE : View.INVISIBLE}"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginEnd="8dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="18dp"
+                    android:layout_marginBottom="4dp"
+                    android:textColor="@color/editText"
+                    android:visibility="@{showNickname || showDateTime ? View.VISIBLE : View.GONE}"
+                    android:text="@{nickname}"/>
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/message_background_to">
+
+                    <ImageView
+                        android:id="@+id/icon"
+                        bind:url="@{message.data}"
+                        android:adjustViewBounds="true"
+                        android:maxWidth="320dp"
+                        android:maxHeight="540dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignEnd="@id/icon"
+                        android:layout_alignBottom="@id/icon"
+                        android:layout_gravity="bottom"
+                        android:maxLines="1"
+                        android:paddingEnd="16dp"
+                        android:paddingBottom="8dp"
+                        android:shadowColor="@color/black"
+                        android:shadowRadius="5"
+                        android:textColor="@color/grayLight"
+                        android:textSize="12sp"
+                        bind:time="@{message.time}" />
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</layout>

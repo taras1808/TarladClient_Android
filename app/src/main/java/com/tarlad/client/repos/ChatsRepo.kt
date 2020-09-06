@@ -10,4 +10,6 @@ interface ChatsRepo {
     fun addParticipants(chatId: Long, chatCreator: ChatCreator): Single<Unit>
     fun getAdminFromChat(chatId: Long): Observable<Long>
     fun removeParticipant(chatId: Long, userId: Long)
+    fun getTitle(chatId: Long): Single<String>
+    fun saveTitle(chatId: Long, title: String): Single<Unit>
 }

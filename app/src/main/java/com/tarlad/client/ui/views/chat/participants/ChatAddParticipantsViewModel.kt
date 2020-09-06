@@ -37,8 +37,7 @@ class ChatAddParticipantsViewModel(
     var page = 0
 
     fun search(chatId: Long) {
-        val userId = appSession.userId ?: return
-        searchUsersDisposable = usersRepo.searchUsersForChat(search.value ?: "", chatId, userId, page++)
+        searchUsersDisposable = usersRepo.searchUsersForChat(search.value ?: "", chatId, page++)
             .ioMain()
             .subscribe(
                 { users.value = it },

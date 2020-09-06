@@ -18,21 +18,33 @@ class ImageRepoImpl(
     private val userDao: UserDao
 ) : ImageRepo {
 
-    override fun saveImage(data: String) {
+    override fun saveImage(ext: String, data: String) {
         val sendData = JSONObject()
         sendData.put("imageData", data)
-        val p = "${appSession.userId}_${Date().time}.jpg"
+        val p = "${appSession.userId}_${Date().time}.${ext}"
         sendData.put("path", p)
-        socket.emit("image", sendData, Ack {
+        socket.emit("users/images", sendData, Ack {
             val user: User = Gson().fromJson(it[0].toString(), User::class.java)
             userDao.insert(user)
         })
     }
 
+    override fun saveImageMessage(ext: String, data: String): Single<String> {
+        return Single.create { emitter ->
+            val sendData = JSONObject()
+            sendData.put("imageData", data)
+            val p = "${appSession.userId}_${Date().time}.${ext}"
+            sendData.put("path", p)
+            socket.emit("images", sendData, Ack {
+                emitter.onSuccess(it[0].toString())
+            })
+        }
+    }
+
     override fun removeImage() {
         AsyncTask.execute {
             userDao.getById(appSession.userId ?: return@execute)?.imageURL ?: return@execute
-            socket.emit("image/delete", Ack {
+            socket.emit("users/images/delete", Ack {
                 val user: User = Gson().fromJson(it[0].toString(), User::class.java)
                 userDao.insert(user)
             })

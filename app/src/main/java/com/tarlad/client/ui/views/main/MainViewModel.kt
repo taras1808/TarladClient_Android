@@ -3,9 +3,9 @@ package com.tarlad.client.ui.views.main
 import android.view.MenuItem
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.gson.Gson
 import com.tarlad.client.AppSession
 import com.tarlad.client.R
+import com.tarlad.client.enums.Chats
 import com.tarlad.client.helpers.ioMain
 import com.tarlad.client.models.db.Chat
 import com.tarlad.client.models.db.User
@@ -16,10 +16,10 @@ import com.tarlad.client.repos.ImageRepo
 import com.tarlad.client.repos.MainRepo
 import com.tarlad.client.repos.UsersRepo
 import com.tarlad.client.states.AppStates
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
-import io.socket.client.Ack
+import io.reactivex.rxjava3.disposables.Disposable
 import io.socket.client.Socket
-import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -36,6 +36,10 @@ class MainViewModel(
 
     val title = MutableLiveData<String>()
 
+    val savedChats: SortedSet<LastMessage> = sortedSetOf(Comparator { o1, o2 ->
+        o2.message.time.compareTo(o1.message.time)
+    })
+
     val fullName = MutableLiveData<String>()
     val imageUrl = MutableLiveData<String>()
 
@@ -45,7 +49,6 @@ class MainViewModel(
 
     var page = 0L
     var time = Date().time
-
 
     fun getChats() {
         mainRepo.getChats(time, page++)
@@ -105,9 +108,9 @@ class MainViewModel(
         return true
     }
 
-    fun loadProfile() {
-        val id = appSession.userId ?: return
-        usersRepo.loadProfile(id)
+    fun loadProfile(): Disposable? {
+        val id = appSession.userId ?: return null
+        return usersRepo.loadProfile(id)
             .ioMain()
             .subscribe(
                 {
@@ -119,8 +122,8 @@ class MainViewModel(
             )
     }
 
-    fun sendImage(data: String) {
-        imageRepo.saveImage(data)
+    fun sendImage(ext: String, data: String) {
+        imageRepo.saveImage(ext, data)
     }
 
     fun removeImage() {

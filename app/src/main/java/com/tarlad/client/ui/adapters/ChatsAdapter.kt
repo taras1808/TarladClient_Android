@@ -8,11 +8,9 @@ import com.tarlad.client.models.db.Chat
 import com.tarlad.client.models.dto.LastMessage
 import java.util.*
 
-class MainAdapter(
-    val chats: SortedSet<LastMessage> = sortedSetOf(Comparator { o1, o2 ->
-        o2.message.time.compareTo(o1.message.time)
-    }), var listener: ((chat: Chat) -> Unit)? = null
-) : RecyclerView.Adapter<MainAdapter.ChatViewHolder>() {
+class ChatsAdapter(
+    val chats: SortedSet<LastMessage>, var listener: ((chat: Chat) -> Unit)? = null
+) : RecyclerView.Adapter<ChatsAdapter.ChatViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
@@ -35,8 +33,6 @@ class MainAdapter(
     fun add(messages: List<LastMessage>) {
         for (lastMessage in messages) {
             val posRemove = chats.indexOfFirst { e -> e.id == lastMessage.id }
-            if (chats.filter { e -> e.id == lastMessage.id }
-                    .firstOrNull { e -> e.message.time > lastMessage.message.time } != null) continue
             chats.removeAll { e -> e.id == lastMessage.id }
             chats.add(lastMessage)
             val posAdd = chats.indexOf(lastMessage)
