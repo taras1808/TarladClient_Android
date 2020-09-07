@@ -151,7 +151,7 @@ class MainViewModel(
 
     fun loadProfile(): Disposable? {
         val id = appSession.userId ?: return null
-        return usersRepo.loadProfile(id)
+        return usersRepo.getAndObserveUser(id)
             .ioMain()
             .subscribe(
                 {
@@ -163,7 +163,7 @@ class MainViewModel(
             )
     }
 
-    fun sendImage(ext: String, data: String) {
+    fun sendImage(ext: String, data: ByteArray) {
         imageRepo.saveImage(ext, data)
     }
 

@@ -12,8 +12,7 @@ interface UserDao {
     fun getById(id: Long): User?
 
     @Query("SELECT * FROM user WHERE id == :id")
-    fun getObservableById(id: Long): Observable<User?>
-
+    fun observeById(id: Long): Observable<User?>
 
 
 
@@ -41,16 +40,6 @@ interface UserDao {
 
 
 
-
-
-    @Query("SELECT * FROM user WHERE id <> :id")
-    fun getAllObservable(id: Long): Observable<List<User>>
-
-    @Query("SELECT * FROM user WHERE nickname LIKE :q || '%' AND id <> :id")
-    fun getByNicknameObservable(q: String, id: Long): Observable<List<User>>
-
-//    @Query("SELECT * FROM user WHERE id IN (:userIds)")
-//    fun loadAllByIds(userIds: IntArray): List<User>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(user: User)

@@ -8,21 +8,18 @@ import io.reactivex.Observable
 interface ChatDao {
 
     @Query("SELECT * FROM chat WHERE id == :id")
-    fun observe(id: Long): Observable<Chat>
-
-    fun observeDistinct(id: Long): Observable<Chat> = observe(id).distinctUntilChanged()
-
-    @Query("SELECT * FROM chat")
-    fun getAll(): List<Chat>
-
-    @Query("SELECT * FROM chat WHERE id == :id")
     fun getById(id: Long): Chat?
 
     @Query("SELECT chat.user_id FROM chat WHERE id == :id")
-    fun getAdmin(id: Long): Long?
+    fun getAdmin(id: Long): Long
 
     @Query("SELECT chat.title FROM chat WHERE id == :id")
     fun getTitle(id: Long): String?
+
+    @Query("SELECT * FROM chat WHERE id == :id")
+    fun observe(id: Long): Observable<Chat>
+
+    fun observeDistinct(id: Long): Observable<Chat> = observe(id).distinctUntilChanged()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(chat: Chat)

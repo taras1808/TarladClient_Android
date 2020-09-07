@@ -12,6 +12,7 @@ import com.tarlad.client.repos.ChatsRepo
 import com.tarlad.client.repos.ImageRepo
 import com.tarlad.client.repos.MessagesRepo
 import com.tarlad.client.repos.UsersRepo
+import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -166,7 +167,7 @@ class ChatViewModel(
         message.value = ""
     }
 
-    fun sendImage(ext: String, data: String) {
+    fun sendImage(ext: String, data: ByteArray) {
         imageRepo.saveImageMessage(ext, data)
             .ioMain()
             .subscribe(
@@ -177,7 +178,7 @@ class ChatViewModel(
                         chatId,
                         userId,
                         "media",
-                        it,
+                        "{\"url\": \"${it.url}\", \"width\": ${it.width}, \"height\": ${it.height}}",
                         Date().time
                     )
 

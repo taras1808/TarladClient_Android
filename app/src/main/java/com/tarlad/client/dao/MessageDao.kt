@@ -9,9 +9,6 @@ interface MessageDao {
     @Query("SELECT * FROM message WHERE id = :id")
     fun getById(id: Long): Message?
 
-    @Query("SELECT message.chat_id FROM message JOIN chat ON message.chat_id = chat.id")
-    fun getAll(): List<Long>
-
     @Query("SELECT * FROM message WHERE time < :time GROUP BY chat_id ORDER BY message.time DESC LIMIT 10 OFFSET (10 * :page)")
     fun getLastMessagesBeforeTime(time: Long, page: Long): List<Message>
 

@@ -4,6 +4,7 @@ import androidx.room.Room
 import com.tarlad.client.AppDatabase
 import com.tarlad.client.AppSession
 import com.tarlad.client.api.AuthApi
+import com.tarlad.client.api.ImagesApi
 import com.tarlad.client.helpers.Preferences
 import com.tarlad.client.repos.*
 import com.tarlad.client.repos.impl.*
@@ -18,12 +19,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 val appModule = module {
 
     single {
-        IO.socket("http://192.168.1.114:3000/")
+        IO.socket("http://192.168.1.114:3000")
     }
 
     single {
         Retrofit.Builder()
-            .baseUrl("http://192.168.1.114:3000/")
+            .baseUrl("http://192.168.1.114:3000")
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
             .build()
@@ -46,12 +47,47 @@ val appModule = module {
 
     single { Preferences(androidContext()) }
 
-    single<AuthRepo> { AuthRepoImpl(get(), get()) }
-    single<UsersRepo> { UsersRepoImpl(get(), get(), get()) }
-    single<ChatsRepo> { ChatsRepoImpl(get(), get(), get(), get(), get()) }
-    single<MessagesRepo> { MessagesRepoImpl(get(), get()) }
-    single<MainRepo> { MainRepoImpl(get(), get(), get()) }
-    single<ImageRepo> { ImageRepoImpl(get(), get(), get()) }
+    single<AuthRepo> {
+        AuthRepoImpl(
+            get(),
+            get()
+        )
+    }
+    single<UsersRepo> {
+        UsersRepoImpl(
+            get(),
+            get()
+        )
+    }
+    single<ChatsRepo> {
+        ChatsRepoImpl(
+            get(),
+            get(),
+            get(),
+            get())
+    }
+    single<MessagesRepo> {
+        MessagesRepoImpl(
+            get(),
+            get()
+        )
+    }
+    single<MainRepo> {
+        MainRepoImpl(
+            get(),
+            get(),
+            get()
+        )
+    }
+    single<ImageRepo> {
+        ImageRepoImpl(
+            get(),
+            get(),
+            get(),
+            get()
+        )
+    }
 
     single { get<Retrofit>().create(AuthApi::class.java) }
+    single { get<Retrofit>().create(ImagesApi::class.java) }
 }

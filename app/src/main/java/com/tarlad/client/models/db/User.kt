@@ -1,11 +1,9 @@
 package com.tarlad.client.models.db
 
-import androidx.annotation.Nullable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 
 @Entity

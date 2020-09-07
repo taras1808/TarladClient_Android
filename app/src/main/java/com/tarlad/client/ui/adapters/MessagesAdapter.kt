@@ -8,12 +8,8 @@ import android.view.LayoutInflater
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.tarlad.client.R
 import com.tarlad.client.databinding.ItemMessageFromMeBinding
 import com.tarlad.client.databinding.ItemMessageFromMeMediaBinding
@@ -21,23 +17,17 @@ import com.tarlad.client.databinding.ItemMessageToMeBinding
 import com.tarlad.client.databinding.ItemMessageToMeMediaBinding
 import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.db.User
-import de.hdodenhof.circleimageview.CircleImageView
 import java.lang.Exception
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
-
+// TODO change listeners to action
 class MessagesAdapter(
     val messages: ArrayList<Message>,
     val users: ArrayList<User>,
     var userId: Long,
-    var deleteListener: ((message: Message) -> Unit),
-    var editListener: ((message: Message) -> Unit),
-    var clickImageListener: ((url: String) -> Unit)
+    private var deleteListener: ((message: Message) -> Unit),
+    private var editListener: ((message: Message) -> Unit),
+    private var clickImageListener: ((url: String) -> Unit)
 ) : RecyclerView.Adapter<MessagesAdapter.ViewHolder>() {
 
     enum class MessagesAdapter {
@@ -371,74 +361,5 @@ class MessagesAdapter(
 
             binding.executePendingBindings()
         }
-    }
-}
-
-@BindingAdapter("datetime")
-fun adaptDateTimeSeparator(datetimeFrom: TextView, datetime: Long) {
-    datetimeFrom.text = formatToYesterdayOrToday(Date(datetime))
-}
-
-@BindingAdapter("time")
-fun adaptTime(timeFrom: TextView, datetime: Long) {
-    timeFrom.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-        ZonedDateTime.ofInstant(Date(datetime).toInstant(), ZoneId.systemDefault())
-            .format(DateTimeFormatter.ofPattern("HH:mm"))
-    else
-        SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(datetime))
-}
-
-@BindingAdapter("url")
-fun loadImage(imageView: CircleImageView, url: String?) {
-        Glide.with(imageView)
-            .load(url)
-            .placeholder(R.drawable.ic_baseline_person_24)
-            .error(R.drawable.ic_baseline_person_24)
-            .into(imageView)
-}
-
-@BindingAdapter("withMargin", "showDateTime", "showNickname")
-fun adaptMargins(
-    message_block_from: LinearLayout,
-    withMargin: Boolean,
-    showDateTime: Boolean,
-    showNickname: Boolean
-) {
-    val scale = message_block_from.context.resources.displayMetrics.density
-    if ((withMargin || showNickname) && !showDateTime)
-        if (showNickname)
-            message_block_from.layoutParams =
-                (message_block_from.layoutParams as ViewGroup.MarginLayoutParams)
-                    .apply { setMargins(0, (20.0 * scale + 0.5).toInt(), 0, 0) }
-        else
-            message_block_from.layoutParams =
-                (message_block_from.layoutParams as ViewGroup.MarginLayoutParams)
-                    .apply { setMargins(0, (12.0 * scale + 0.5).toInt(), 0, 0) }
-    else
-        message_block_from.layoutParams =
-            (message_block_from.layoutParams as ViewGroup.MarginLayoutParams)
-                .apply { setMargins(0, (4.0 * scale + 0.5).toInt(), 0, 0) }
-}
-
-fun formatToYesterdayOrToday(date: Date): String {
-    val calendar = Calendar.getInstance()
-    calendar.time = date
-    val today = Calendar.getInstance()
-    val yesterday = Calendar.getInstance()
-    yesterday.add(Calendar.DATE, -1)
-    val lastWeek = Calendar.getInstance()
-    lastWeek.add(Calendar.DATE, -7)
-    val timeFormatter: DateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-    return if (calendar[Calendar.YEAR] == today[Calendar.YEAR] && calendar[Calendar.DAY_OF_YEAR] == today[Calendar.DAY_OF_YEAR]
-    ) {
-        "Today " + timeFormatter.format(date)
-    } else if (calendar[Calendar.YEAR] == yesterday[Calendar.YEAR] && calendar[Calendar.DAY_OF_YEAR] == yesterday[Calendar.DAY_OF_YEAR]
-    ) {
-        "Yesterday " + timeFormatter.format(date)
-    } else {
-        if (calendar[Calendar.DAY_OF_YEAR] > lastWeek[Calendar.DAY_OF_YEAR])
-            SimpleDateFormat("EEEE HH:mm", Locale.getDefault()).format(date)
-        else
-            SimpleDateFormat("dd MMMM YYYY HH:mm", Locale.getDefault()).format(date)
     }
 }

@@ -12,7 +12,7 @@ import com.tarlad.client.models.db.User
 class ChatsAdapter(
     val messages: ArrayList<Message>,
     val users: ArrayList<User>,
-    val chats: ArrayList<Chat>,
+    private val chats: ArrayList<Chat>,
     private val chatLists: HashMap<Long, List<Long>>,
     private val you: Long,
     var listener: ((chatId: Long) -> Unit)

@@ -79,10 +79,7 @@ class AuthViewModel(
             .doOnSubscribe { registerNicknameState.value = Register.Loading }
             .subscribe(
                 { registerNicknameState.value = Register.Ok },
-                {
-                    println(it.toString())
-                    registerNicknameState.value = Register.Error
-                }
+                { registerNicknameState.value = Register.Error }
             )
     }
 

@@ -15,6 +15,7 @@ val addChatModule = module {
         ChatCreateViewModel(
             get(),
             get(),
+            get(),
             get()
         )
     }

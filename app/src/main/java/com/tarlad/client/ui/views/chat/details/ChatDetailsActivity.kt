@@ -25,7 +25,7 @@ import org.koin.core.parameter.parametersOf
 
 class ChatDetailsActivity : AppCompatActivity() {
 
-    private val adapter = ChatDetailsAdapter(arrayListOf())
+    private lateinit var adapter: ChatDetailsAdapter
 
     private val vm by viewModel<ChatDetailsViewModel> { parametersOf(lifecycleScope.id) }
 
@@ -46,9 +46,8 @@ class ChatDetailsActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbarInclude.toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
 
+        adapter = ChatDetailsAdapter(arrayListOf(), vm.appSession.userId!!, -1) { id -> show(id) }
         binding.participantsRecycler.adapter = adapter
-
-        adapter.userId = vm.appSession.userId
 
         vm.loadChatTitle(chatId)
         vm.loadUsers(chatId)
@@ -67,12 +66,9 @@ class ChatDetailsActivity : AppCompatActivity() {
                 .hideSoftInputFromWindow(binding.chatTitle.windowToken, 0)
             invalidateOptionsMenu()
         })
-
-        adapter.listener = { id -> runOnUiThread { show(id) } }
     }
 
     private fun show(id: Long) {
-
         val bottomSheetDialog = BottomSheetDialog(this)
         val bottomSheetView = layoutInflater.inflate(R.layout.sheet_details, null)
         bottomSheetDialog.setContentView(bottomSheetView)
@@ -106,7 +102,7 @@ class ChatDetailsActivity : AppCompatActivity() {
 
     private fun observeAdmin() {
         vm.admin.observe(this, Observer {
-            adapter.id = it
+            adapter.adminId = it
             adapter.notifyDataSetChanged()
         })
     }

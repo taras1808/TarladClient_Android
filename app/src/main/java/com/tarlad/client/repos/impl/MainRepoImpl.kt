@@ -32,11 +32,11 @@ class MainRepoImpl(
             val cache = messageDao.getLastMessagesBeforeTime(time, page)
             if (cache.isNotEmpty())
                 emitter.onNext(Pair(Chats.ADD, cache))
-            fetchMessages(cache, time, page, emitter)
+            fetchLastMessages(cache, time, page, emitter)
         }
     }
 
-    private fun fetchMessages(
+    private fun fetchLastMessages(
         cache: List<Message>,
         time: Long,
         page: Long,
@@ -58,8 +58,10 @@ class MainRepoImpl(
                 emitter.onComplete()
                 return@Ack
             }
-
-            emitter.onNext(Pair(Chats.ADD, messages))
+            if (cache != messages) {
+                emitter.onNext(Pair(Chats.ADD, messages))
+                messageDao.insertAll(messages)
+            }
             emitter.onComplete()
         })
     }
@@ -91,7 +93,7 @@ class MainRepoImpl(
                 messageDao.delete(message)
                 val previousMessage = messageDao.getLastMessageForChat(message.chatId)
                 if (previousMessage == null) {
-                    fetchLastMessage(message.chatId, message, emitter)
+                    fetchLastMessageForChat(message.chatId, message, emitter)
                 } else {
                     if (message.time < previousMessage.time) return@Listener
                     emitter.onNext(Pair(Chats.ADD, listOf(previousMessage)))
@@ -102,13 +104,13 @@ class MainRepoImpl(
         }
     }
 
-    private fun fetchLastMessage(
+    private fun fetchLastMessageForChat(
         chatId: Long,
         message: Message,
         emitter: Emitter<Pair<Chats, List<Message>>>
     ) {
         socket.emit(Events.MESSAGES_LAST, chatId, Ack { array ->
-            if (array[0] == null) {
+            if (array.isEmpty()) {
                 val pair = Pair(Chats.DELETE, listOf(message))
                 emitter.onNext(pair)
                 return@Ack

@@ -1,11 +1,14 @@
 package com.tarlad.client.ui.views.chat.create
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.tarlad.client.App
 import com.tarlad.client.AppSession
+import com.tarlad.client.R
 import com.tarlad.client.helpers.ioMain
 import com.tarlad.client.models.db.Chat
-import com.tarlad.client.models.dto.ChatCreator
 import com.tarlad.client.models.db.User
 import com.tarlad.client.repos.ChatsRepo
 import com.tarlad.client.repos.UsersRepo
@@ -13,10 +16,11 @@ import io.reactivex.rxjava3.disposables.Disposable
 import java.util.ArrayList
 
 class ChatCreateViewModel(
+    application: Application,
     private val usersRepo: UsersRepo,
     private val chatsRepo: ChatsRepo,
     private val appSession: AppSession
-): ViewModel() {
+): AndroidViewModel(application) {
 
     val title = MutableLiveData<String>()
 
@@ -46,11 +50,10 @@ class ChatCreateViewModel(
 
     fun createChat(users: ArrayList<Long>) {
         if (users.size == 0) {
-            error.value = "Choose users"
+            error.value = getApplication<App>().getString(R.string.choose_users)
             return
         }
-        val chatCreator = ChatCreator(users)
-        chatsRepo.createChat(chatCreator)
+        chatsRepo.createChat(users)
             .ioMain()
             .subscribe(
                 { openChat.value = it },

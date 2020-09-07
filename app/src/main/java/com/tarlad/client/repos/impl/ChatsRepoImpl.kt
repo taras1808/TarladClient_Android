@@ -2,19 +2,13 @@ package com.tarlad.client.repos.impl
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.tarlad.client.AppSession
 import com.tarlad.client.dao.ChatDao
 import com.tarlad.client.dao.ChatListDao
 import com.tarlad.client.dao.UserDao
-import com.tarlad.client.enums.Chats
 import com.tarlad.client.enums.Events
-import com.tarlad.client.helpers.getTitle
 import com.tarlad.client.models.db.Chat
-import com.tarlad.client.models.dto.ChatCreator
 import com.tarlad.client.models.db.ChatList
-import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.db.User
-import com.tarlad.client.models.dto.ChatLists
 import com.tarlad.client.repos.ChatsRepo
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
@@ -24,47 +18,47 @@ import io.socket.emitter.Emitter as EmitterIO
 
 class ChatsRepoImpl(
     private val socket: Socket,
-    private val appSession: AppSession,
     private val chatDao: ChatDao,
     private val userDao: UserDao,
     private val chatListDao: ChatListDao
 ) : ChatsRepo {
 
-    override fun createChat(chatCreator: ChatCreator): Single<Chat> {
+    private var addParticipantsListener: EmitterIO.Listener? = null
+
+    override fun createChat(data: List<Long>): Single<Chat> {
         return Single.create { emitter ->
-            val userId = appSession.userId ?: return@create
-            socket.emit(Events.CHATS_CREATE, chatCreator.data, Ack {
-                val chatLists = Gson().fromJson(it[0].toString(), ChatLists::class.java)
-                chatDao.insert(Chat(chatLists.id, chatLists.title, chatLists.userId))
-//                chatListDao.insert(chatLists.id, chatCreator.data.toMutableList().apply { add(userId) }.toList())
-                val title = getTitle(chatLists.title, chatLists.users, userId)
-                emitter.onSuccess(Chat(chatLists.id, title, chatLists.userId))
+            socket.emit(Events.CHATS_CREATE, data, Ack { array ->
+                val chat = Gson().fromJson(array[0].toString(), Chat::class.java)
+                chatDao.insert(chat)
+                chatListDao.insert(chat.id, data.toMutableList().apply { add(chat.userId) }.toList())
+                emitter.onSuccess(chat)
             })
         }
     }
 
     override fun addParticipants(
         chatId: Long,
-        chatCreator: ChatCreator
+        data: List<Long>
     ): Single<Unit> {
         return Single.create { emitter ->
-            socket.emit("chats/users/add", chatId, chatCreator.data, Ack {
-                if (it.isEmpty()) return@Ack
-//                chatListDao.insert(chatId, chatCreator.data)
+            socket.emit(Events.CHATS_USERS_ADD, chatId, data, Ack { array ->
+                if (array.isEmpty()) return@Ack //TODO
+                chatListDao.insert(chatId, data)
                 emitter.onSuccess(Unit)
             })
         }
     }
 
-    override fun getAdminFromChat(chatId: Long): Observable<Long> {
-        return Observable.create { emitter ->
-            val admin = chatDao.getAdmin(chatId) ?: return@create
-            emitter.onNext(admin)
+    override fun getAdminFromChat(chatId: Long): Single<Long> {
+        return Single.create { emitter ->
+            val admin = chatDao.getAdmin(chatId)
+            emitter.onSuccess(admin)
         }
     }
 
     override fun removeParticipant(chatId: Long, userId: Long) {
-        socket.emit("chats/users/delete", chatId, userId, Ack {
+        socket.emit(Events.CHATS_USERS_DELETE, chatId, userId, Ack { array ->
+            if (array.isEmpty()) return@Ack //TODO
             chatListDao.delete(ChatList(chatId, userId))
         })
     }
@@ -77,7 +71,7 @@ class ChatsRepoImpl(
 
     override fun saveTitle(chatId: Long, title: String): Single<Unit> {
         return Single.create { emitter ->
-            socket.emit("chats/title", chatId, title, Ack {
+            socket.emit(Events.CHATS_TITLE, chatId, title, Ack {
                 val chat = Gson().fromJson(it[0].toString(), Chat::class.java)
                 chatDao.insert(chat)
                 emitter.onSuccess(Unit)
@@ -114,7 +108,7 @@ class ChatsRepoImpl(
                     object : TypeToken<List<User>>() {}.type
                 ).apply {
                     chatListDao.delete(id, cache)
-                    chatListDao.insert(id, this)
+                    chatListDao.insert(id, this.map { e -> e.id })
                     userDao.insertAll(this)
                 }
 
@@ -124,18 +118,14 @@ class ChatsRepoImpl(
         }
     }
 
-
-    private var addParticipantsListener: EmitterIO.Listener? = null
-
-
     override fun observeChats(): Observable<Long> {
         return Observable.create { emitter ->
-            addParticipantsListener?.let { socket.off("chats/update", it) }
+            addParticipantsListener?.let { socket.off(Events.CHATS_UPDATE, it) }
             addParticipantsListener = EmitterIO.Listener { array ->
                 val chatId = array[0].toString().toLong()
                 emitter.onNext(chatId)
             }
-            socket.on("chats/update", addParticipantsListener)
+            socket.on(Events.CHATS_UPDATE, addParticipantsListener)
         }
     }
 

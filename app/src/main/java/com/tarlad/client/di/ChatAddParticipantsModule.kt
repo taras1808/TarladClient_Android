@@ -14,7 +14,6 @@ val chatAddParticipantsModule = module {
         ChatAddParticipantsViewModel(
             get(),
             get(),
-            get(),
             get()
         )
     }

@@ -6,7 +6,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tarlad.client.databinding.ItemChatCreateBinding
 import com.tarlad.client.models.db.User
 
-class UsersAdapter(val users: ArrayList<User>, val listener: () -> Unit) : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
+// TODO change listeners to action
+class UsersAdapter(
+    val users: ArrayList<User>,
+    val listener: () -> Unit
+) : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
 
     val selected = ArrayList<Long>()
 

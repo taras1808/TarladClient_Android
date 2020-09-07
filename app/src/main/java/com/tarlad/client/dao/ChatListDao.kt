@@ -14,9 +14,7 @@ interface ChatListDao {
     @Query("SELECT user.id FROM chat JOIN chatList ON chat.id = chatList.chat_id JOIN user ON user.id = chatList.user_id WHERE chat.id == :chatId")
     fun getUsersIdsByChatId(chatId: Long): List<Long>
 
-//    fun insert(chatId: Long, users: List<Long>) = users.forEach { id -> insert(ChatList(chatId, id)) }
-
-    fun insert(chatId: Long, users: List<User>) = users.forEach { user -> insert(ChatList(chatId, user.id)) }
+    fun insert(chatId: Long, users: List<Long>) = users.forEach { id -> insert(ChatList(chatId, id)) }
 
     fun delete(chatId: Long, users: List<User>) = users.forEach { user -> delete(ChatList(chatId, user.id)) }
 

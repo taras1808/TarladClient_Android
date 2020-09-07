@@ -6,14 +6,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Environment
-import android.util.Base64
 import android.webkit.MimeTypeMap
-import androidx.appcompat.app.AppCompatActivity
 import com.tarlad.client.models.db.User
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -40,7 +39,7 @@ fun getFileExtension(uri: Uri, contentResolver: ContentResolver): String {
     return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri)) ?: "jpg"
 }
 
-fun encodeImage(path: Uri, mime: String, contentResolver: ContentResolver): String {
+fun encodeImage(path: Uri, mime: String, contentResolver: ContentResolver): ByteArray {
     val inputStream: InputStream? = contentResolver.openInputStream(path)
     val bm = BitmapFactory.decodeStream(inputStream)
     val baos = ByteArrayOutputStream()
@@ -50,13 +49,34 @@ fun encodeImage(path: Uri, mime: String, contentResolver: ContentResolver): Stri
         "webp" -> bm.compress(Bitmap.CompressFormat.WEBP, 30, baos)
         else -> bm.compress(Bitmap.CompressFormat.JPEG, 30, baos)
     }
-    val b: ByteArray = baos.toByteArray()
-    return Base64.encodeToString(b, Base64.DEFAULT)
+    return baos.toByteArray()
 }
 
-fun encodeImage(bm: Bitmap): String {
+fun encodeImage(bm: Bitmap): ByteArray {
     val baos = ByteArrayOutputStream()
     bm.compress(Bitmap.CompressFormat.JPEG, 30, baos)
-    val b: ByteArray = baos.toByteArray()
-    return Base64.encodeToString(b, Base64.DEFAULT)
+    return baos.toByteArray()
+}
+
+fun formatToYesterdayOrToday(date: Date): String {
+    val calendar = Calendar.getInstance()
+    calendar.time = date
+    val today = Calendar.getInstance()
+    val yesterday = Calendar.getInstance()
+    yesterday.add(Calendar.DATE, -1)
+    val lastWeek = Calendar.getInstance()
+    lastWeek.add(Calendar.DATE, -7)
+    val timeFormatter: DateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    return if (calendar[Calendar.YEAR] == today[Calendar.YEAR] && calendar[Calendar.DAY_OF_YEAR] == today[Calendar.DAY_OF_YEAR]
+    ) {
+        "Today " + timeFormatter.format(date)
+    } else if (calendar[Calendar.YEAR] == yesterday[Calendar.YEAR] && calendar[Calendar.DAY_OF_YEAR] == yesterday[Calendar.DAY_OF_YEAR]
+    ) {
+        "Yesterday " + timeFormatter.format(date)
+    } else {
+        if (calendar[Calendar.DAY_OF_YEAR] > lastWeek[Calendar.DAY_OF_YEAR])
+            SimpleDateFormat("EEEE HH:mm", Locale.getDefault()).format(date)
+        else
+            SimpleDateFormat("dd MMMM YYYY HH:mm", Locale.getDefault()).format(date)
+    }
 }
