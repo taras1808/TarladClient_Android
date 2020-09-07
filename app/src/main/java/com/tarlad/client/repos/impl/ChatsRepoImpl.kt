@@ -113,6 +113,7 @@ class ChatsRepoImpl(
                     array[0].toString(),
                     object : TypeToken<List<User>>() {}.type
                 ).apply {
+                    chatListDao.delete(id, cache)
                     chatListDao.insert(id, this)
                     userDao.insertAll(this)
                 }
@@ -135,6 +136,13 @@ class ChatsRepoImpl(
                 emitter.onNext(chatId)
             }
             socket.on("chats/update", addParticipantsListener)
+        }
+    }
+
+    override fun observeChat(chatId: Long): Observable<Chat> {
+        return Observable.create { emitter ->
+            chatDao.observeDistinct(chatId)
+                .subscribe({ if (it != null) emitter.onNext(it) }, {})
         }
     }
 

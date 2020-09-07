@@ -18,6 +18,8 @@ interface ChatListDao {
 
     fun insert(chatId: Long, users: List<User>) = users.forEach { user -> insert(ChatList(chatId, user.id)) }
 
+    fun delete(chatId: Long, users: List<User>) = users.forEach { user -> delete(ChatList(chatId, user.id)) }
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(chatList: ChatList)
 

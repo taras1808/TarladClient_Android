@@ -71,7 +71,8 @@ class MainRepoImpl(
             addMessageListener = EmitterIO.Listener {
                 val message: Message = Gson().fromJson(it[0].toString(), Message::class.java)
                 messageDao.insert(message)
-                emitter.onNext(Pair(Chats.ADD, listOf(message)))
+                if (messageDao.getLastMessageForChat(message.chatId)?.time == message.time)
+                    emitter.onNext(Pair(Chats.ADD, listOf(message)))
             }
             socket.on(Events.MESSAGES, addMessageListener)
 
@@ -79,7 +80,8 @@ class MainRepoImpl(
             updateMessageListener = EmitterIO.Listener {
                 val message: Message = Gson().fromJson(it[0].toString(), Message::class.java)
                 messageDao.insert(message)
-                emitter.onNext(Pair(Chats.ADD, listOf(message)))
+                if (messageDao.getLastMessageForChat(message.chatId)?.time == message.time)
+                    emitter.onNext(Pair(Chats.ADD, listOf(message)))
             }
             socket.on(Events.MESSAGES_UPDATE, updateMessageListener)
 

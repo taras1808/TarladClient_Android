@@ -18,4 +18,5 @@ interface ChatsRepo {
     fun getChat(id: Long): Observable<Chat>
     fun getChatLists(id: Long): Observable<List<User>>
     fun observeChats(): Observable<Long>
+    fun observeChat(chatId: Long): Observable<Chat>
 }

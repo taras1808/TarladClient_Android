@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModel
 import com.tarlad.client.AppSession
 import com.tarlad.client.enums.Messages
 import com.tarlad.client.helpers.ioMain
+import com.tarlad.client.models.db.Chat
 import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.db.User
+import com.tarlad.client.repos.ChatsRepo
 import com.tarlad.client.repos.ImageRepo
 import com.tarlad.client.repos.MessagesRepo
 import com.tarlad.client.repos.UsersRepo
@@ -17,14 +19,18 @@ class ChatViewModel(
     val appSession: AppSession,
     private val usersRepo: UsersRepo,
     private val messagesRepo: MessagesRepo,
+    private val chatsRepo: ChatsRepo,
     private val imageRepo: ImageRepo
 ) : ViewModel() {
 
-    val data: ArrayList<Message> = arrayListOf()
+    val messages: ArrayList<Message> = arrayListOf()
+    val users: ArrayList<User> = arrayListOf()
 
     val error = MutableLiveData<String>()
-    val messages = MutableLiveData<ArrayList<Pair<Messages, List<Message>>>>(arrayListOf())
-    val users = MutableLiveData<List<User>>()
+    val messagesLiveData = MutableLiveData<ArrayList<Pair<Messages, List<Message>>>>(arrayListOf())
+    val usersLiveData = MutableLiveData<List<User>>(arrayListOf())
+    val userLiveData = MutableLiveData<User>()
+    val chatLiveData = MutableLiveData<Chat>()
 
     val title = MutableLiveData<String>()
 
@@ -59,8 +65,8 @@ class ChatViewModel(
             .ioMain()
             .subscribe(
                 {
-                    messages.value!!.add(it)
-                    messages.value = messages.value
+                    this.messagesLiveData.value!!.add(it)
+                    this.messagesLiveData.value = this.messagesLiveData.value
                 },
                 { error.value = it.toString() }
             )
@@ -71,8 +77,8 @@ class ChatViewModel(
             .ioMain()
             .subscribe(
                 {
-                    messages.value!!.add(it)
-                    messages.value = messages.value
+                    this.messagesLiveData.value!!.add(it)
+                    this.messagesLiveData.value = this.messagesLiveData.value
                 },
                 { error.value = it.toString() }
             )
@@ -84,18 +90,27 @@ class ChatViewModel(
             .ioMain()
             .subscribe(
                 {
-                    messages.value!!.add(it)
-                    messages.value = messages.value
+                    this.messagesLiveData.value!!.add(it)
+                    this.messagesLiveData.value = this.messagesLiveData.value
                 },
                 { error.value = it.toString() }
             )
     }
 
-    fun getUsers(chatId: Long) {
-        usersRepo.getUsersFromChat(chatId)
+    fun getUser(userId: Long) {
+        usersRepo.getUser(userId)
             .ioMain()
             .subscribe(
-                { users.value = it },
+                { userLiveData.value = it },
+                { error.value = it.toString() }
+            )
+    }
+
+    fun observeUsers(chatId: Long) {
+        usersRepo.observeUsersInChat(chatId)
+            .ioMain()
+            .subscribe(
+                { usersLiveData.value = it },
                 { error.value = it.toString() }
             )
     }
@@ -105,8 +120,8 @@ class ChatViewModel(
             .ioMain()
             .subscribe(
                 {
-                    messages.value!!.add(it)
-                    messages.value = messages.value
+                    this.messagesLiveData.value!!.add(it)
+                    this.messagesLiveData.value = this.messagesLiveData.value
                 },
                 { error.value = it.toString() }
             )
@@ -137,8 +152,8 @@ class ChatViewModel(
             .ioMain()
             .subscribe(
                 {
-                    messages.value!!.add(it)
-                    messages.value = messages.value
+                    this.messagesLiveData.value!!.add(it)
+                    this.messagesLiveData.value = this.messagesLiveData.value
                     stopEditing()
                 },
                 { error.value = it.toString() }
@@ -170,8 +185,8 @@ class ChatViewModel(
                         .ioMain()
                         .subscribe(
                             {
-                                messages.value!!.add(it)
-                                messages.value = messages.value
+                                this.messagesLiveData.value!!.add(it)
+                                this.messagesLiveData.value = this.messagesLiveData.value
                             },
                             { error.value = it.toString() }
                         )
@@ -182,5 +197,14 @@ class ChatViewModel(
 
     fun clear() {
         image.value = ""
+    }
+
+    fun observeChat(chatId: Long) {
+        chatsRepo.observeChat(chatId)
+            .ioMain()
+            .subscribe(
+                { chatLiveData.value = it },
+                { error.value = it.toString() }
+            )
     }
 }

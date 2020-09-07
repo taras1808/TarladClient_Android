@@ -33,11 +33,11 @@ import java.util.*
 
 class MessagesAdapter(
     val messages: ArrayList<Message>,
-    val users: ArrayList<User> = arrayListOf(),
-    var userId: Long = -1,
-    var deleteListener: ((message: Message) -> Unit)? = {},
-    var editListener: ((message: Message) -> Unit)? = {},
-    var clickImageListener: ((url: String) -> Unit)? = {}
+    val users: ArrayList<User>,
+    var userId: Long,
+    var deleteListener: ((message: Message) -> Unit),
+    var editListener: ((message: Message) -> Unit),
+    var clickImageListener: ((url: String) -> Unit)
 ) : RecyclerView.Adapter<MessagesAdapter.ViewHolder>() {
 
     enum class MessagesAdapter {
@@ -189,7 +189,6 @@ class MessagesAdapter(
         messages.forEach {
 
             val count = this.messages.count { e -> e.id == it.id }
-
 
             if (count == 0) {
                 this.messages.add(it)

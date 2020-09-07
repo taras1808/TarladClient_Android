@@ -2,9 +2,15 @@ package com.tarlad.client.dao
 
 import androidx.room.*
 import com.tarlad.client.models.db.Chat
+import io.reactivex.Observable
 
 @Dao
 interface ChatDao {
+
+    @Query("SELECT * FROM chat WHERE id == :id")
+    fun observe(id: Long): Observable<Chat>
+
+    fun observeDistinct(id: Long): Observable<Chat> = observe(id).distinctUntilChanged()
 
     @Query("SELECT * FROM chat")
     fun getAll(): List<Chat>

@@ -75,7 +75,7 @@ class UsersRepoImpl(
         }
     }
 
-    override fun getUsersFromChat(chatId: Long): Observable<List<User>> {
+    override fun observeUsersInChat(chatId: Long): Observable<List<User>> {
         return Observable.create { emitter ->
             userDao.getDistinctUserFromChat(chatId)
                 .subscribe(
@@ -106,6 +106,10 @@ class UsersRepoImpl(
                 emitter.onNext(cache)
 
             socket.emit("users", id, Ack {
+                if (it.isEmpty()) {
+                    emitter.onComplete()
+                    return@Ack
+                }
                 val user = Gson().fromJson(it[0].toString(), User::class.java)
                 userDao.insert(user)
                 emitter.onNext(user)

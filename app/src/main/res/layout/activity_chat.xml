@@ -99,7 +99,7 @@
                         android:layout_gravity="bottom"
                         android:background="@null"
                         android:onClick="openImages"
-                        android:text="Image"
+                        android:text="@string/image"
                         android:textColor="@drawable/btn_send" />
 
                     <EditText
@@ -141,7 +141,7 @@
         </LinearLayout>
 
         <RelativeLayout
-            android:id="@+id/d"
+            android:id="@+id/imageFrame"
             android:background="@color/blackTransparent"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -154,7 +154,7 @@
             android:visibility="@{vm.image == null || vm.image.empty ? View.GONE : View.VISIBLE }">
 
             <ImageView
-                android:id="@+id/image"
+                android:id="@+id/imageView"
                 android:paddingTop="30dp"
                 android:paddingBottom="30dp"
                 android:paddingStart="10dp"

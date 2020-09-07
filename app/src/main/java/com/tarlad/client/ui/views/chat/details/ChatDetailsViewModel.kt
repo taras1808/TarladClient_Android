@@ -39,7 +39,7 @@ class ChatDetailsViewModel(
     }
 
     fun loadUsers(chatId: Long) {
-        usersRepo.getUsersFromChat(chatId)
+        usersRepo.observeUsersInChat(chatId)
             .ioMain()
             .subscribe(
                 { users.value = it },
