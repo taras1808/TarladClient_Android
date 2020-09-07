@@ -9,13 +9,12 @@
     </data>
 
     <LinearLayout xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         tools:context=".ui.views.main.MainActivity">
 
-        <include app:title="@{vm.title}" android:id="@+id/toolbarInclude" layout="@layout/toolbar" />
+        <include app:title="@{vm.toolbarTitle}" android:id="@+id/toolbarInclude" layout="@layout/toolbar" />
 
         <FrameLayout
             android:id="@+id/container"
@@ -24,7 +23,6 @@
             android:layout_weight="1"/>
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/navbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:itemIconTint="@drawable/navigation_view_colored"

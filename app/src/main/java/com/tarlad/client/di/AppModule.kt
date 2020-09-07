@@ -48,9 +48,9 @@ val appModule = module {
 
     single<AuthRepo> { AuthRepoImpl(get(), get()) }
     single<UsersRepo> { UsersRepoImpl(get(), get(), get()) }
-    single<ChatsRepo> { ChatsRepoImpl(get(), get(), get(), get()) }
+    single<ChatsRepo> { ChatsRepoImpl(get(), get(), get(), get(), get()) }
     single<MessagesRepo> { MessagesRepoImpl(get(), get()) }
-    single<MainRepo> { MainRepoImpl(get(), get(), get(), get(), get(), get(), get()) }
+    single<MainRepo> { MainRepoImpl(get(), get(), get()) }
     single<ImageRepo> { ImageRepoImpl(get(), get(), get()) }
 
     single { get<Retrofit>().create(AuthApi::class.java) }

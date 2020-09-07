@@ -4,12 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View"/>
         <variable
             name="message"
             type="java.lang.String"/>
 
         <variable
             name="title"
+            type="java.lang.String"/>
+
+        <variable
+            name="imageUrlBack"
+            type="java.lang.String"/>
+
+        <variable
+            name="imageUrlFront"
             type="java.lang.String"/>
 
         <variable
@@ -25,11 +34,47 @@
         android:orientation="horizontal"
         android:padding="16dp">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            url="@{imageUrl}"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_baseline_person_24" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="58dp"
+            android:layout_height="58dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                url="@{imageUrlBack}"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:civ_border_width="2dp"
+                app:civ_border_color="@color/white"
+                app:civ_circle_background_color="@color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:visibility="@{imageUrl.empty ? View.VISIBLE : View.GONE}"/>
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                url="@{imageUrlFront}"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:civ_border_width="2dp"
+                app:civ_border_color="@color/white"
+                app:civ_circle_background_color="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:visibility="@{imageUrl.empty ? View.VISIBLE : View.GONE}"/>
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                url="@{imageUrl}"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:civ_border_width="2dp"
+                app:civ_border_color="@color/white"
+                app:civ_circle_background_color="@color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:visibility="@{imageUrl.empty ? View.GONE : View.VISIBLE}"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
 
         <LinearLayout
             android:layout_width="0dp"

@@ -8,20 +8,17 @@ import com.tarlad.client.R
 import com.tarlad.client.enums.Chats
 import com.tarlad.client.helpers.ioMain
 import com.tarlad.client.models.db.Chat
+import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.db.User
-import com.tarlad.client.models.dto.LastMessage
 import com.tarlad.client.models.dto.RefreshTokenDTO
-import com.tarlad.client.repos.AuthRepo
-import com.tarlad.client.repos.ImageRepo
-import com.tarlad.client.repos.MainRepo
-import com.tarlad.client.repos.UsersRepo
+import com.tarlad.client.repos.*
 import com.tarlad.client.states.AppStates
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.Disposable
 import io.socket.client.Socket
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class MainViewModel(
     private val socket: Socket,
@@ -29,46 +26,90 @@ class MainViewModel(
     private val mainRepo: MainRepo,
     private val authRepo: AuthRepo,
     private val usersRepo: UsersRepo,
+    private val chatsRepo: ChatsRepo,
     private val imageRepo: ImageRepo
 ): ViewModel() {
 
     val fragment = MutableLiveData(0)
 
-    val title = MutableLiveData<String>()
+    val toolbarTitle = MutableLiveData<String>()
 
-    val savedChats: SortedSet<LastMessage> = sortedSetOf(Comparator { o1, o2 ->
-        o2.message.time.compareTo(o1.message.time)
-    })
+    val messages: ArrayList<Message> = arrayListOf()
+    val users: ArrayList<User> = arrayListOf()
+    val chats: ArrayList<Chat> = arrayListOf()
+    val chatLists: HashMap<Long, List<Long>> = hashMapOf()
 
     val fullName = MutableLiveData<String>()
     val imageUrl = MutableLiveData<String>()
 
     val error = MutableLiveData<String>()
-    val chats = MutableLiveData<ArrayList<Pair<Chats, List<LastMessage>>>>(arrayListOf())
-    val openChat = MutableLiveData<Chat>()
+    val messagesLiveData = MutableLiveData<ArrayList<Pair<Chats, List<Message>>>>(arrayListOf())
+    val usersLiveDate = MutableLiveData<User>()
+    val chatsLiveDate = MutableLiveData<Chat>()
+    val chatListsLiveDate = MutableLiveData<Pair<Long, List<User>>>()
+    val openChat = MutableLiveData<Long>()
 
     var page = 0L
     var time = Date().time
 
-    fun getChats() {
-        mainRepo.getChats(time, page++)
+    fun getMessages() {
+        mainRepo.getMessages(time, page++)
             .ioMain()
             .subscribe(
                 {
-                    chats.value!!.add(it)
-                    chats.value = chats.value
+                    messagesLiveData.value!!.add(it)
+                    messagesLiveData.value = messagesLiveData.value
+                },
+                { error.value = it.toString() }
+            )
+    }
+
+    fun getUser(userId: Long) {
+        usersRepo.getUser(userId)
+            .ioMain()
+            .subscribe(
+                { usersLiveDate.value = it },
+                { error.value = it.toString() }
+            )
+    }
+
+    fun getChat(chatId: Long) {
+        chatsRepo.getChat(chatId)
+            .ioMain()
+            .subscribe(
+                { chatsLiveDate.value = it },
+                { error.value = it.toString() }
+            )
+    }
+
+    fun getChatLists(chatId: Long) {
+        chatsRepo.getChatLists(chatId)
+            .ioMain()
+            .subscribe(
+                { chatListsLiveDate.value = Pair(chatId, it) },
+                { error.value = it.toString() }
+            )
+    }
+
+    fun observeMessages() {
+        mainRepo.observeMessages()
+            .ioMain()
+            .subscribe(
+                {
+                    messagesLiveData.value!!.add(it)
+                    messagesLiveData.value = messagesLiveData.value
                 },
                 { error.value = it.toString() }
             )
     }
 
     fun observeChats() {
-        mainRepo.observeChats()
+        chatsRepo.observeChats()
             .ioMain()
             .subscribe(
                 {
-                    chats.value!!.add(it)
-                    chats.value = chats.value
+                    getChat(it)
+                    getChatLists(it)
                 },
                 { error.value = it.toString() }
             )
@@ -114,7 +155,7 @@ class MainViewModel(
             .ioMain()
             .subscribe(
                 {
-                    title.value = it.nickname
+                    toolbarTitle.value = it.nickname
                     fullName.value = "${it.name} ${it.surname}"
                     imageUrl.value = it.imageURL
                 },

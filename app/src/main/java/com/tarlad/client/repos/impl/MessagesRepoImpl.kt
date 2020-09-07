@@ -3,6 +3,7 @@ package com.tarlad.client.repos.impl
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.tarlad.client.dao.MessageDao
+import com.tarlad.client.enums.Events
 import com.tarlad.client.models.db.Message
 import com.tarlad.client.repos.MessagesRepo
 import com.tarlad.client.enums.Messages
@@ -32,7 +33,7 @@ class MessagesRepoImpl(
             data.put("time", message.time)
 
             emitter.onNext(Pair(Messages.SEND, listOf(message)))
-            socket.emit("messages", data, Ack {
+            socket.emit(Events.MESSAGES, data, Ack {
                 val sentMessage: Message = Gson().fromJson(it[0].toString(), Message::class.java)
                 messageDao.insert(sentMessage)
                 emitter.onNext(Pair(Messages.REPLACE, listOf(message, sentMessage)))
@@ -45,7 +46,7 @@ class MessagesRepoImpl(
     override fun deleteMessage(message: Message): Single<Pair<Messages, List<Message>>> {
         return Single.create { emitter ->
             emitter.onSuccess(Pair(Messages.DELETE, listOf(message)))
-            socket.emit("messages/delete", message.id)
+            socket.emit(Events.MESSAGES_DELETE, message.id)
         }
     }
 
@@ -113,23 +114,23 @@ class MessagesRepoImpl(
     ): Observable<Pair<Messages, List<Message>>> {
         return Observable.create { emitter ->
 
-            messageListener?.let { socket.off("message", it) }
+            messageListener?.let { socket.off(Events.MESSAGES, it) }
             messageListener = Emitter.Listener {
                 val message: Message = Gson().fromJson(it[0].toString(), Message::class.java)
                 if (message.chatId == chatId)
                     emitter.onNext(Pair(Messages.ADD, listOf(message)))
             }
-            socket.on("message", messageListener)
+            socket.on(Events.MESSAGES, messageListener)
 
-            updateMessageListener?.let { socket.off("message/update", it) }
+            updateMessageListener?.let { socket.off(Events.MESSAGES_UPDATE, it) }
             updateMessageListener = Emitter.Listener {
                 val message: Message = Gson().fromJson(it[0].toString(), Message::class.java)
                 if (message.chatId == chatId)
                     emitter.onNext(Pair(Messages.UPDATE, listOf(message)))
             }
-            socket.on("message/update", updateMessageListener)
+            socket.on(Events.MESSAGES_UPDATE, updateMessageListener)
 
-            delListener?.let { socket.off("message/delete", it) }
+            delListener?.let { socket.off(Events.MESSAGES_DELETE, it) }
             delListener = Emitter.Listener {
                 emitter.onNext(
                     Pair(
@@ -138,7 +139,7 @@ class MessagesRepoImpl(
                     )
                 )
             }
-            socket.on("message/delete", delListener)
+            socket.on(Events.MESSAGES_DELETE, delListener)
 
         }
     }

@@ -4,12 +4,18 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.tarlad.client.databinding.ItemChatBinding
+import com.tarlad.client.helpers.getTitle
 import com.tarlad.client.models.db.Chat
-import com.tarlad.client.models.dto.LastMessage
-import java.util.*
+import com.tarlad.client.models.db.Message
+import com.tarlad.client.models.db.User
 
 class ChatsAdapter(
-    val chats: SortedSet<LastMessage>, var listener: ((chat: Chat) -> Unit)? = null
+    val messages: ArrayList<Message>,
+    val users: ArrayList<User>,
+    val chats: ArrayList<Chat>,
+    private val chatLists: HashMap<Long, List<Long>>,
+    private val you: Long,
+    var listener: ((chatId: Long) -> Unit)
 ) : RecyclerView.Adapter<ChatsAdapter.ChatViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
@@ -19,23 +25,43 @@ class ChatsAdapter(
                 layoutInflater,
                 parent,
                 false
-            ), listener
+            )
         )
     }
 
-    override fun getItemCount(): Int = chats.size
+    override fun getItemCount(): Int = messages.size
 
     override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
-        val chat = chats.toList()[position]
-        holder.bind(chat)
+        val item = messages[position]
+        val user = users.filter { e -> e.id != you }.find { e -> e.id == item.userId}
+        val from = if (user == null) "${"you"}:" else "${user.name} ${user.surname}:"
+        val data = if (item.type == "text") item.data else "Attachment"
+        val message = "$from $data"
+        val chat = chats.find { e -> e.id == item.chatId }
+        val users = chatLists[chat?.id]?.mapNotNull { e -> users.find { u -> e == u.id } }?.let {
+            if (it.size > 1) it.filter { e -> e.id != you } else it
+        } ?: arrayListOf()
+        val title = getTitle(chat?.title, users, you)
+
+        if (users.size <= 1) {
+            val imageUrl = users.firstOrNull()?.imageURL
+            holder.bind(message, title, imageUrl) { listener(item.chatId) }
+        } else {
+            val firstUser = users.find { e -> e.id == item.userId} ?: users[0]
+            val imageUrlFront = firstUser.imageURL
+            val imageUrlBack = if (firstUser != users[0]) users[0].imageURL else users[1].imageURL
+            holder.bind(message, title, imageUrlBack, imageUrlFront) { listener(item.chatId) }
+        }
+
     }
 
-    fun add(messages: List<LastMessage>) {
-        for (lastMessage in messages) {
-            val posRemove = chats.indexOfFirst { e -> e.id == lastMessage.id }
-            chats.removeAll { e -> e.id == lastMessage.id }
-            chats.add(lastMessage)
-            val posAdd = chats.indexOf(lastMessage)
+    fun add(list: List<Message>) {
+        for (message in list) {
+            val posRemove = messages.indexOfFirst { e -> e.chatId == message.chatId }
+            messages.removeAll { e -> e.chatId == message.chatId }
+            messages.add(message)
+            messages.sortByDescending { e -> e.time }
+            val posAdd = messages.indexOf(message)
             if (posRemove == posAdd)
                 notifyItemChanged(posAdd)
             else
@@ -51,30 +77,36 @@ class ChatsAdapter(
         }
     }
 
-    fun delete(messages: List<LastMessage>) {
-        messages.forEach { lastMessage ->
-            val posRemove = chats.indexOfFirst { e -> e.id == lastMessage.id }
+    fun delete(list: List<Message>) {
+        list.forEach { message ->
+            val posRemove = messages.indexOfFirst { e -> e.chatId == message.chatId }
             if (posRemove != -1) {
-                chats.removeAll { e -> e.id == lastMessage.id }
+                messages.removeAll { e -> e.chatId == message.chatId }
                 notifyItemRemoved(posRemove)
             }
         }
     }
 
-    class ChatViewHolder(
-        private val binding: ItemChatBinding,
-        private val listener: ((chat: Chat) -> Unit)?
-    ) :
+    class ChatViewHolder(private val binding: ItemChatBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        fun bind(message: String, title: String, imageUrlBack: String?, imageUrlFront: String?, action: () -> Unit) {
+            binding.imageUrl = ""
+            binding.message = message
+            binding.title = title
+            binding.imageUrlBack = imageUrlBack
+            binding.imageUrlFront = imageUrlFront
+            binding.root.setOnClickListener { action() }
+            binding.executePendingBindings()
+        }
 
-        fun bind(lastMessage: LastMessage) {
-            binding.message = "${lastMessage.users.find { e -> e.id == lastMessage.message.userId}?.nickname ?: "you"}: ${lastMessage.message.data}"
-            binding.title = lastMessage.title
-            binding.imageUrl = lastMessage.users.find { e -> e.id == lastMessage.message.userId}?.imageURL ?: ""
-            binding.root.setOnClickListener {
-                listener?.let { it(Chat(lastMessage.id, lastMessage.title, lastMessage.userId)) }
-            }
+        fun bind(message: String, title: String, imageUrl: String?, action: () -> Unit) {
+            binding.imageUrlBack = ""
+            binding.imageUrlFront = ""
+            binding.message = message
+            binding.title = title
+            binding.imageUrl = imageUrl
+            binding.root.setOnClickListener { action() }
             binding.executePendingBindings()
         }
     }

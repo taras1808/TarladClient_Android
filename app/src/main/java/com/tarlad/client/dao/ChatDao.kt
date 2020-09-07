@@ -10,7 +10,7 @@ interface ChatDao {
     fun getAll(): List<Chat>
 
     @Query("SELECT * FROM chat WHERE id == :id")
-    fun getChatById(id: Long): Chat?
+    fun getById(id: Long): Chat?
 
     @Query("SELECT chat.user_id FROM chat WHERE id == :id")
     fun getAdmin(id: Long): Long?

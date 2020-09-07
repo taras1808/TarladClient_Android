@@ -97,4 +97,20 @@ class UsersRepoImpl(
             })
         }
     }
+
+    override fun getUser(id: Long): Observable<User> {
+        return Observable.create { emitter ->
+            val cache = userDao.getById(id)
+
+            if (cache != null)
+                emitter.onNext(cache)
+
+            socket.emit("users", id, Ack {
+                val user = Gson().fromJson(it[0].toString(), User::class.java)
+                userDao.insert(user)
+                emitter.onNext(user)
+                emitter.onComplete()
+            })
+        }
+    }
 }

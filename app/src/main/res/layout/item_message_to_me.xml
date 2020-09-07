@@ -61,6 +61,9 @@
                 android:layout_height="24dp"
                 android:layout_gravity="bottom"
                 android:layout_margin="8dp"
+                app:civ_border_width="1dp"
+                app:civ_border_color="@color/white"
+                app:civ_circle_background_color="@color/white"
                 app:url="@{imageUrl}"
                 android:visibility="@{showImage ? View.VISIBLE : View.INVISIBLE}"/>
 

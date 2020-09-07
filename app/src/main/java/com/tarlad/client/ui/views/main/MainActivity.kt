@@ -25,6 +25,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
+import java.lang.IllegalArgumentException
 
 
 class MainActivity : AppCompatActivity() {
@@ -32,12 +33,12 @@ class MainActivity : AppCompatActivity() {
     private val vm: MainViewModel by viewModel { parametersOf(lifecycleScope.id) }
     private val homeFragment: HomeFragment = HomeFragment()
     private val profileFragment: ProfileFragment = ProfileFragment()
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding: ActivityMainBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.vm = vm
         binding.lifecycleOwner = this
 
@@ -47,7 +48,6 @@ class MainActivity : AppCompatActivity() {
         observeError()
         observeAppState()
         observeFragment()
-        observeOpenChat()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -99,23 +99,12 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun observeOpenChat() {
-        vm.openChat.observe(this, Observer {
-            if (it == null) return@Observer
-            val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("ID", it.id)
-            intent.putExtra("TITLE", it.title)
-            startActivity(intent)
-            vm.openChat.value = null
-        })
-    }
-
     private fun observeFragment() {
         vm.fragment.observe(this, Observer {
             val selectedFragment = when (it) {
                 0 -> homeFragment
                 1 -> profileFragment
-                else -> homeFragment
+                else -> throw IllegalArgumentException()
             }
             supportFragmentManager.beginTransaction()
                 .replace(R.id.container, selectedFragment)
@@ -126,7 +115,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeError() {
         vm.error.observe(this, Observer {
-            val snack = Snackbar.make(main, it, Snackbar.LENGTH_LONG)
+            val snack = Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG)
             val color = ContextCompat.getColor(applicationContext, R.color.colorError)
             snack.setBackgroundTint(color)
             snack.show()
