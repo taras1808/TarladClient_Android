@@ -65,7 +65,6 @@ class MessagesAdapter(
                         false
                     ),
                     deleteListener,
-                    editListener,
                     clickImageListener
                 )
             MessagesAdapter.TO_MEDIA.ordinal ->
@@ -297,8 +296,7 @@ class MessagesAdapter(
     class FromMediaViewHolder(
         private val binding: ItemMessageFromMeMediaBinding,
         private val deleteListener: ((message: Message) -> Unit)?,
-        private val editListener: ((message: Message) -> Unit)?,
-        var clickImageListener: ((url: String) -> Unit)? = {},
+        private var clickImageListener: ((url: String) -> Unit)? = {},
     ) : ViewHolder(binding.root) {
 
         override fun bind(
@@ -315,6 +313,8 @@ class MessagesAdapter(
                         deleteListener?.let { it(message) }
                         true
                     }
+                    menu.findItem(R.id.action_edit_message).isVisible = false
+                    menu.findItem(R.id.action_copy_message).isVisible = false
                 }
             else
                 binding.root.setOnCreateContextMenuListener { menu, _, _ -> menu.clear() }

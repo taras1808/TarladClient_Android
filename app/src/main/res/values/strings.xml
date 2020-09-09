@@ -52,6 +52,10 @@
     <string name="add_title">Add title</string>
     <string name="message">Message…</string>
     <string name="image">Image</string>
+    <string name="settings">Settings</string>
+    <string name="your_name">Your name</string>
+    <string name="your_surname">Your surname</string>
+    <string name="your_nickname">Your nickname</string>
 
 
 </resources>

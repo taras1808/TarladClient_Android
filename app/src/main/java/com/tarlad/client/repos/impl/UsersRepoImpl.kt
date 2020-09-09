@@ -7,6 +7,7 @@ import com.tarlad.client.enums.Events
 import com.tarlad.client.models.db.User
 import com.tarlad.client.repos.UsersRepo
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 import io.socket.client.Ack
 import io.socket.client.Socket
 
@@ -115,6 +116,16 @@ class UsersRepoImpl(
                 userDao.insert(user)
                 emitter.onNext(user)
                 emitter.onComplete()
+            })
+        }
+    }
+
+    override fun updateUser(nickname: String, name: String, surname: String): Single<User> {
+        return Single.create { emitter ->
+            socket.emit(Events.USERS_UPDATE, nickname, name, surname, Ack {
+                val user = Gson().fromJson(it[0].toString(), User::class.java)
+                userDao.insert(user)
+                emitter.onSuccess(user)
             })
         }
     }

@@ -17,11 +17,9 @@ import com.tarlad.client.databinding.ActivityMainBinding
 import com.tarlad.client.states.AppStates
 import com.tarlad.client.ui.views.chat.create.ChatCreateActivity
 import com.tarlad.client.ui.views.auth.AuthActivity
-import com.tarlad.client.ui.views.chat.ChatActivity
 import com.tarlad.client.ui.views.main.fragments.HomeFragment
 import com.tarlad.client.ui.views.main.fragments.ProfileFragment
-import io.reactivex.rxjava3.core.Observable
-import kotlinx.android.synthetic.main.activity_main.*
+import com.tarlad.client.ui.views.settings.SettingsActivity
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -51,19 +49,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(R.menu.menu_home, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        menu?.findItem(R.id.action_chat_create)?.isVisible = homeFragment.isVisible
-        menu?.findItem(R.id.action_logout)?.isVisible = !homeFragment.isVisible
+        menu?.clear()
+        if (!homeFragment.isVisible) menuInflater.inflate(R.menu.menu_profile, menu)
+        else menuInflater.inflate(R.menu.menu_home, menu)
         return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_logout -> showLogoutAlertDialog()
+            R.id.action_settings -> openSettingsActivity()
             R.id.action_chat_create -> openChatCreateActivity()
         }
         return super.onOptionsItemSelected(item)
@@ -79,6 +79,11 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, getString(R.string.bye), Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton(android.R.string.no, null).show()
+    }
+
+    private fun openSettingsActivity() {
+        val intent = Intent(this, SettingsActivity::class.java)
+        startActivity(intent)
     }
 
     private fun openChatCreateActivity() {

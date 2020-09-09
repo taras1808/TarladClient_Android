@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <include app:title="@{vm.title}" android:id="@+id/toolbarInclude" layout="@layout/toolbar" />
+        <include app:title="@{vm.toolbarTitle}" android:id="@+id/toolbarInclude" layout="@layout/toolbar" />
 
         <LinearLayout
             android:layout_width="match_parent"

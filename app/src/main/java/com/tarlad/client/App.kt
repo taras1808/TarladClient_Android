@@ -20,7 +20,8 @@ class App : Application() {
                 addChatModule,
                 chatModule,
                 chatDetailsModule,
-                chatAddParticipantsModule
+                chatAddParticipantsModule,
+                settingsModule
             )
         }
 

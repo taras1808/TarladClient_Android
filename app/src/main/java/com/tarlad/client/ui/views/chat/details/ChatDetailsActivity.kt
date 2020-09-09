@@ -37,7 +37,6 @@ class ChatDetailsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         chatId = intent.getLongExtra("ID",-1L)
-        vm.title.value = "Details"
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_chat_details)
         binding.vm = vm
@@ -45,6 +44,9 @@ class ChatDetailsActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbarInclude.toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
+
+        vm.toolbarTitle.value = "Details"
+
 
         adapter = ChatDetailsAdapter(arrayListOf(), vm.appSession.userId!!, -1) { id -> show(id) }
         binding.participantsRecycler.adapter = adapter
@@ -109,13 +111,13 @@ class ChatDetailsActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         if (vm.chatTitle.value != vm.chatTitleSaved.value)
-            menuInflater.inflate(R.menu.menu_chat_create, menu)
+            menuInflater.inflate(R.menu.menu_confirm, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
-            R.id.add_chat_ok -> vm.changeTitle(chatId)
+            R.id.action_confirm -> vm.changeTitle(chatId)
         }
         return super.onOptionsItemSelected(item)
     }

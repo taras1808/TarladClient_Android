@@ -38,7 +38,7 @@ class ChatCreateActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbarInclude.toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
 
-        vm.title.value = getString(R.string.new_chat)
+        vm.toolbarTitle.value = getString(R.string.new_chat)
 
         initRecyclerView()
 
@@ -84,13 +84,13 @@ class ChatCreateActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         if (adapter.selected.isNotEmpty())
-            menuInflater.inflate(R.menu.menu_chat_create, menu)
+            menuInflater.inflate(R.menu.menu_confirm, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
-            R.id.add_chat_ok -> vm.createChat(adapter.selected)
+            R.id.action_confirm -> vm.createChat(adapter.selected)
         }
         return super.onOptionsItemSelected(item)
     }

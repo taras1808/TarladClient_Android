@@ -14,7 +14,7 @@ class ChatDetailsViewModel(
     private val chatsRepo: ChatsRepo
 ): ViewModel() {
 
-    val title = MutableLiveData<String>()
+    val toolbarTitle = MutableLiveData<String>()
 
 
     val chatTitle = MutableLiveData<String>()

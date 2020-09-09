@@ -3,12 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/action_logout"
-        android:icon="@drawable/ic_exit"
-        android:title="@string/logout"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/action_chat_create"
         android:icon="@drawable/ic_add"
         android:title="@string/add"

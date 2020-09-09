@@ -22,7 +22,7 @@ class ChatCreateViewModel(
     private val appSession: AppSession
 ): AndroidViewModel(application) {
 
-    val title = MutableLiveData<String>()
+    val toolbarTitle = MutableLiveData<String>()
 
     val search = MutableLiveData<String>()
 

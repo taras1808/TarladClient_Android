@@ -17,6 +17,8 @@ object Events {
 
     const val USERS = "users"
 
+    const val USERS_UPDATE = "users/update"
+
     const val USERS_SEARCH = "users/search"
 
     const val USERS_IMAGES = "users/images"

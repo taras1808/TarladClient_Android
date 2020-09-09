@@ -44,7 +44,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0"
                 android:src="@drawable/ic_done"
-                android:tint="@color/green"
+                app:tint="@color/green"
                 android:visibility="@{vm.emailStatus ? View.VISIBLE : View.GONE}"/>
 
             <ProgressBar
@@ -109,7 +109,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0"
                 android:src="@drawable/ic_done"
-                android:tint="@color/green"
+                app:tint="@color/green"
                 android:visibility="@{vm.nicknameStatus ? View.VISIBLE : View.GONE}"/>
 
             <ProgressBar
