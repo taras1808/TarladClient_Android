@@ -35,7 +35,7 @@ class ChatsAdapter(
         val item = messages[position]
         val user = users.filter { e -> e.id != you }.find { e -> e.id == item.userId}
         val from = if (user == null) "${"you"}:" else "${user.name} ${user.surname}:"
-        val data = if (item.type == "text") item.data else "Attachment"
+        val data = if (item.type == "text") item.data else "Sent a photo"
         val message = "$from $data"
         val chat = chats.find { e -> e.id == item.chatId }
         val users = chatLists[chat?.id]?.mapNotNull { e -> users.find { u -> e == u.id } }?.let {

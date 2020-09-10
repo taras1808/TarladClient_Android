@@ -34,6 +34,10 @@ class MessagesRepoImpl(
 
             emitter.onNext(Pair(Messages.SEND, listOf(message)))
             socket.emit(Events.MESSAGES, data, Ack {
+                if (it.isEmpty()) {
+                    emitter.onComplete()
+                    return@Ack
+                }
                 val sentMessage: Message = Gson().fromJson(it[0].toString(), Message::class.java)
                 messageDao.insert(sentMessage)
                 emitter.onNext(Pair(Messages.REPLACE, listOf(message, sentMessage)))

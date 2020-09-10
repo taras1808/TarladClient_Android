@@ -16,6 +16,7 @@
     <string name="home">Home</string>
     <string name="profile">Profile</string>
     <string name="do_you_really_want_to_logout">Do you really want to logout?</string>
+    <string name="do_you_really_want_to_leave">Do you really want to leave?</string>
     <string name="bye">Bye!</string>
     <string name="empty_email_field">Empty email field</string>
     <string name="bad_email_address">Bad email address</string>
@@ -56,6 +57,7 @@
     <string name="your_name">Your name</string>
     <string name="your_surname">Your surname</string>
     <string name="your_nickname">Your nickname</string>
+    <string name="leave_chat">Leave chat</string>
 
 
 </resources>

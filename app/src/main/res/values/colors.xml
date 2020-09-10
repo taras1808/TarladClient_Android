@@ -19,6 +19,8 @@
     <color name="white">#FFFFFF</color>
 
     <color name="colorError">#FF6464</color>
+    <color name="redLight">#FFA0A0</color>
+    <color name="redLighter">#FFC1C1</color>
 
     <color name="blue">#6D8DCC</color>
     <color name="blue_pressed">#8EADE8</color>

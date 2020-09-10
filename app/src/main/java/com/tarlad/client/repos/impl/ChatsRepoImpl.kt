@@ -87,9 +87,15 @@ class ChatsRepoImpl(
                 emitter.onNext(cache)
 
             socket.emit(Events.CHATS, id, Ack { array ->
+                if (array.isEmpty()) {
+                    emitter.onComplete()
+                    return@Ack
+                }
                 val chat = Gson().fromJson(array[0].toString(), Chat::class.java)
-                chatDao.insert(chat)
-                emitter.onNext(chat)
+                if (cache != chat) {
+                    chatDao.insert(chat)
+                    emitter.onNext(chat)
+                }
                 emitter.onComplete()
             })
         }
@@ -103,6 +109,10 @@ class ChatsRepoImpl(
                 emitter.onNext(cache)
 
             socket.emit(Events.CHATS_USERS, id, Ack { array ->
+                if (array.isEmpty()) {
+                    emitter.onComplete()
+                    return@Ack
+                }
                 val users = Gson().fromJson<List<User>>(
                     array[0].toString(),
                     object : TypeToken<List<User>>() {}.type

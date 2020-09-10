@@ -71,7 +71,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="10dp"
-
             android:src="@drawable/dots"
             android:background="@drawable/small_ripple"
             android:visibility="@{isControl ? View.VISIBLE : View.GONE}" />

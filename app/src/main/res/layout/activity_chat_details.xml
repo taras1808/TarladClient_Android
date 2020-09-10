@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
         <variable
             name="vm"
             type="com.tarlad.client.ui.views.chat.details.ChatDetailsViewModel" />
+
     </data>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <LinearLayout
         android:id="@+id/create_chat_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -70,7 +71,7 @@
                 android:minHeight="24dp"
                 android:text="@string/add"
                 android:textAllCaps="false"
-                android:textColor="@drawable/btn_send"
+                android:textColor="@drawable/button_send"
                 android:textSize="18sp"
                 android:onClick="openAddParticipants"/>
 
@@ -79,8 +80,19 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/participants_recycler"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:background="@null"
+            android:text="@string/leave_chat"
+            android:textColor="@color/redLight"
+            android:layout_gravity="center_horizontal"
+            android:textSize="14sp"
+            android:onClick="showLeaveAlertDialog"/>
     </LinearLayout>
 
 </layout>

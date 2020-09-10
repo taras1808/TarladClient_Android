@@ -16,13 +16,11 @@ class ChatDetailsViewModel(
 
     val toolbarTitle = MutableLiveData<String>()
 
-
     val chatTitle = MutableLiveData<String>()
     val chatTitleSaved = MutableLiveData<String>()
 
     val error = MutableLiveData<String>()
     val users = MutableLiveData<List<User>>()
-
 
     val admin = MutableLiveData<Long>()
 
@@ -67,5 +65,9 @@ class ChatDetailsViewModel(
                 { chatTitleSaved.value = chatTitle.value },
                 { error.value = it.toString() }
             )
+    }
+
+    fun leaveChat(chatId: Long) {
+        chatsRepo.removeParticipant(chatId, appSession.userId!!)
     }
 }

@@ -8,7 +8,9 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.appcompat.app.ActionBar
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -58,11 +60,11 @@ class ChatDetailsActivity : AppCompatActivity() {
         observeUsers()
         observeAdmin()
 
-        vm.chatTitle.observe(this, Observer {
+        vm.chatTitle.observe(this, {
             invalidateOptionsMenu()
         })
 
-        vm.chatTitleSaved.observe(this, Observer {
+        vm.chatTitleSaved.observe(this, {
             binding.chatTitle.clearFocus()
             (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
                 .hideSoftInputFromWindow(binding.chatTitle.windowToken, 0)
@@ -109,6 +111,17 @@ class ChatDetailsActivity : AppCompatActivity() {
         })
     }
 
+    fun showLeaveAlertDialog(v: View) {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.leave_chat))
+            .setMessage(getString(R.string.do_you_really_want_to_leave))
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .setPositiveButton(android.R.string.yes) { _, _ ->
+                vm.leaveChat(chatId)
+            }
+            .setNegativeButton(android.R.string.no, null).show()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         if (vm.chatTitle.value != vm.chatTitleSaved.value)
             menuInflater.inflate(R.menu.menu_confirm, menu)
@@ -126,4 +139,5 @@ class ChatDetailsActivity : AppCompatActivity() {
         finish()
         return false
     }
+
 }
