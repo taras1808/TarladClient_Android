@@ -64,10 +64,10 @@ class HomeFragment : Fragment() {
                 messages.forEach { message ->
                     if (!vm.chats.map { e -> e.id }.contains(message.chatId)) {
                         vm.getChat(message.chatId)
-                    }
-
-                    if (!vm.users.map { e -> e.id }.contains(message.userId)) {
-                        vm.getUser(message.userId)
+                    } else {
+                        if (!vm.users.map { e -> e.id }.contains(message.userId)) {
+                            vm.getUser(message.userId)
+                        }
                     }
                 }
                 when (action) {

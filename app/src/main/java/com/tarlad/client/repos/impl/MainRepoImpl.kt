@@ -43,6 +43,12 @@ class MainRepoImpl(
         emitter: Emitter<Pair<Chats, List<Message>>>
     ) {
         socket.emit(Events.CHATS_MESSAGES_LAST, time, page, Ack { array ->
+
+            if (array.isEmpty()) {
+                emitter.onComplete()
+                return@Ack
+            }
+
             val messages = Gson().fromJson<List<Message>>(
                 array[0].toString(),
                 object : TypeToken<List<Message>>() {}.type
