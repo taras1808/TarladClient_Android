@@ -1,8 +1,12 @@
 package com.tarlad.client.ui.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.tarlad.client.R
 import com.tarlad.client.databinding.ItemChatDetailsBinding
 import com.tarlad.client.models.db.User
 
@@ -27,12 +31,18 @@ class ChatDetailsAdapter(
 
     class UserViewHolder(val binding: ItemChatDetailsBinding): RecyclerView.ViewHolder(binding.root) {
 
+        @SuppressLint("SetTextI18n")
         fun bind(user: User, isAdmin: Boolean, isControl: Boolean, action: () -> Unit) {
-            binding.user = user
-            binding.isAdmin = isAdmin
-            binding.isControl = isControl && !isAdmin
+            Glide.with(binding.imageURL)
+                .load(user.imageURL)
+                .placeholder(R.drawable.ic_baseline_person_24)
+                .error(R.drawable.ic_baseline_person_24)
+                .into(binding.imageURL)
+            binding.nickname.text = user.nickname
+            binding.fullName.text = "${user.name} ${user.surname}"
             binding.settings.setOnClickListener { action() }
-            binding.executePendingBindings()
+            binding.settings.visibility = if (isControl && !isAdmin) View.VISIBLE else View.GONE
+            binding.admin.visibility = if (isAdmin) View.VISIBLE else View.GONE
         }
     }
 }

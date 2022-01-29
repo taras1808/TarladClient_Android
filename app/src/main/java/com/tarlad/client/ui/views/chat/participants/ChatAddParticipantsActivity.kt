@@ -1,28 +1,25 @@
 package com.tarlad.client.ui.views.chat.participants
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tarlad.client.R
 import com.tarlad.client.databinding.ActivityChatParticipantsBinding
+import com.tarlad.client.helpers.bindText
 import com.tarlad.client.ui.adapters.UsersAdapter
-import kotlinx.android.synthetic.main.activity_chat_participants.*
-import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
 
 
 class ChatAddParticipantsActivity : AppCompatActivity() {
 
-    private val vm by viewModel<ChatAddParticipantsViewModel> { parametersOf(lifecycleScope.id) }
+    private val vm by viewModel<ChatAddParticipantsViewModel>()
     private val adapter = UsersAdapter(arrayListOf()) { invalidateOptionsMenu() }
     private var chatId: Long = -1
     private lateinit var binding: ActivityChatParticipantsBinding
@@ -31,14 +28,15 @@ class ChatAddParticipantsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         chatId = intent.getLongExtra("ID",-1L)
-        vm.title.value = getString(R.string.add_participants)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_chat_participants)
-        binding.vm = vm
-        binding.lifecycleOwner = this
+        binding = ActivityChatParticipantsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         setSupportActionBar(binding.toolbarInclude.toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
+        binding.toolbarInclude.toolbarTitle.text = getString(R.string.add_participants)
+
+        binding.search.bindText(this, vm.search)
 
         initRecyclerView()
 
@@ -49,29 +47,28 @@ class ChatAddParticipantsActivity : AppCompatActivity() {
         observeComplete()
 
         vm.search(chatId)
-
     }
 
     private fun observeComplete() {
-        vm.complete.observe(this , Observer {
+        vm.complete.observe(this) {
             if (it) binding.participantsSearchRecycler.clearOnScrollListeners()
-        })
+        }
     }
 
     private fun observeFinish() {
-        vm.success.observe(this , Observer {
+        vm.success.observe(this) {
             if (it) finish()
-        })
+        }
     }
 
     private fun observeSearch() {
-        vm.search.observe(this, Observer {
+        vm.search.observe(this) {
             adapter.users.clear()
             vm.page = 0
             vm.searchUsersDisposable?.dispose()
             vm.search(chatId)
             initRecyclerView()
-        })
+        }
     }
 
     private fun initRecyclerView() {
@@ -102,24 +99,25 @@ class ChatAddParticipantsActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun observeUsers() {
-        vm.users.observe(this , Observer {
+        vm.users.observe(this) {
             adapter.users.clear()
             adapter.users.addAll(it)
             adapter.notifyDataSetChanged()
-        })
+        }
     }
 
     private fun observeError() {
-        vm.error.observe(this, Observer {
+        vm.error.observe(this) {
             if (!it.isNullOrEmpty()) {
-                val snack = Snackbar.make(create_chat_container, it, Snackbar.LENGTH_LONG)
+                val snack = Snackbar.make(binding.createChatContainer, it, Snackbar.LENGTH_LONG)
                 snack.setBackgroundTint(
                     ContextCompat.getColor(applicationContext, R.color.colorError)
                 )
                 snack.show()
             }
-        })
+        }
         vm.error.value = null
     }
 

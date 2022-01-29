@@ -17,32 +17,25 @@ import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.tarlad.client.R
 import com.tarlad.client.databinding.ActivityChatBinding
+import com.tarlad.client.databinding.SheetChatBinding
 import com.tarlad.client.enums.ImagePicker
 import com.tarlad.client.enums.Messages
-import com.tarlad.client.helpers.createImageFile
-import com.tarlad.client.helpers.encodeImage
-import com.tarlad.client.helpers.getFileExtension
-import com.tarlad.client.ui.animators.MessageItemAnimator
+import com.tarlad.client.helpers.*
 import com.tarlad.client.ui.adapters.MessagesAdapter
+import com.tarlad.client.ui.animators.MessageItemAnimator
 import com.tarlad.client.ui.views.chat.details.ChatDetailsActivity
-import kotlinx.android.synthetic.main.activity_chat.*
-import kotlinx.android.synthetic.main.sheet_chat.view.*
-import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
 import java.io.File
 import java.io.IOException
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sqrt
-import com.tarlad.client.helpers.getTitle
 
 
 class ChatActivity : AppCompatActivity() {
@@ -51,7 +44,7 @@ class ChatActivity : AppCompatActivity() {
         const val PERMISSION_CODE = 0
     }
 
-    private val vm by viewModel<ChatViewModel> { parametersOf(lifecycleScope.id) }
+    private val vm by viewModel<ChatViewModel>()
     private lateinit var adapter: MessagesAdapter
     private var chatId: Long = -1
 
@@ -64,12 +57,45 @@ class ChatActivity : AppCompatActivity() {
 
         chatId = intent.getLongExtra("ID", -1L)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_chat)
-        binding.vm = vm
-        binding.lifecycleOwner = this
+        binding = ActivityChatBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         setSupportActionBar(binding.toolbarInclude.toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
+
+        vm.image.observe(this) {
+            loadImageNotCircle(binding.imageView, it)
+            binding.imageFrame.visibility = if (it == null || it.isEmpty()) View.GONE else View.VISIBLE
+        }
+        binding.imageFrame.setOnClickListener {
+            vm.clear()
+        }
+
+        binding.editBtn.setOnClickListener {
+            vm.editMessage()
+        }
+        binding.sendBtn.setOnClickListener {
+            vm.sendMessage()
+        }
+        vm.isEdit.observe(this) {
+            binding.editLayout.visibility = if (it) View.VISIBLE else View.GONE
+            binding.editBtn.visibility = if (it) View.VISIBLE else View.GONE
+            binding.sendBtn.visibility = if (it) View.GONE else View.VISIBLE
+        }
+
+        binding.message.bindText(this, vm.message)
+
+        binding.stopEditBtn.setOnClickListener {
+            vm.stopEditing()
+        }
+
+        vm.editMessage.observe(this) {
+            binding.editedMessage.text = it?.data ?: ""
+        }
+
+        vm.title.observe(this) {
+            binding.toolbarInclude.toolbarTitle.text = it
+        }
 
         initRecyclerView()
         initImageFrame()
@@ -87,28 +113,29 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun observeChat() {
-        vm.chatLiveData.observe(this, { chat ->
+        vm.chatLiveData.observe(this) { chat ->
             vm.title.value = getTitle(chat.title, vm.usersLiveData.value!!, vm.appSession.userId!!)
-        })
+        }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun observeUsers() {
-        vm.userLiveData.observe(this, { user ->
+        vm.userLiveData.observe(this) { user ->
             vm.users.removeAll { e -> e.id == user.id }
             vm.users.add(user)
             adapter.notifyDataSetChanged()
-        })
+        }
 
-        vm.usersLiveData.observe(this, { users ->
+        vm.usersLiveData.observe(this) { users ->
             vm.users.removeAll(users)
             vm.users.addAll(users)
             vm.title.value = getTitle(vm.chatLiveData.value?.title, vm.usersLiveData.value!!, vm.appSession.userId!!)
             adapter.notifyDataSetChanged()
-        })
+        }
     }
 
     private fun observeMessages() {
-        vm.messagesLiveData.observe(this, { list ->
+        vm.messagesLiveData.observe(this) { list ->
             list.forEach { pair ->
                 val action = pair.first
                 val messages = pair.second
@@ -131,19 +158,19 @@ class ChatActivity : AppCompatActivity() {
                 }
             }
             vm.messagesLiveData.value!!.clear()
-        })
+        }
     }
 
     private fun observeError() {
-        vm.error.observe(this, {
+        vm.error.observe(this) {
             if (!it.isNullOrEmpty()) {
-                val snack = Snackbar.make(chat_container, it, Snackbar.LENGTH_LONG)
+                val snack = Snackbar.make(binding.chatContainer, it, Snackbar.LENGTH_LONG)
                 snack.setBackgroundTint(
                     ContextCompat.getColor(applicationContext, R.color.colorError)
                 )
                 snack.show()
             }
-        })
+        }
         vm.error.value = null
     }
 
@@ -181,9 +208,9 @@ class ChatActivity : AppCompatActivity() {
         binding.messagesRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                val totalItemCount = messages_recycler.layoutManager!!.itemCount
+                val totalItemCount = binding.messagesRecycler.layoutManager!!.itemCount
                 val lastVisibleItem =
-                    (messages_recycler.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+                    (binding.messagesRecycler.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
                 if (totalItemCount <= lastVisibleItem + 5)
                     vm.getMessages(chatId)
             }
@@ -328,8 +355,8 @@ class ChatActivity : AppCompatActivity() {
     @SuppressLint("InflateParams")
     fun openImages(v: View) {
         val bottomSheetDialog = BottomSheetDialog(this)
-        val bottomSheetView = layoutInflater.inflate(R.layout.sheet_chat, null)
-        bottomSheetDialog.setContentView(bottomSheetView)
+        val bottomSheetView = SheetChatBinding.inflate(layoutInflater)
+        bottomSheetDialog.setContentView(bottomSheetView.root)
         bottomSheetView.take.setOnClickListener {
             if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED)
                 requestPermissions(arrayOf(Manifest.permission.CAMERA).toList().toTypedArray(), PERMISSION_CODE)
@@ -372,6 +399,7 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     private fun dispatchTakePictureIntent() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             takePictureIntent.resolveActivity(packageManager)?.also {

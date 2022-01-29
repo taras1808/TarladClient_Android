@@ -1,34 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <data>
-        <variable
-            name="title"
-            type="java.lang.String" />
-    </data>
-
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:elevation="4dp"
-        android:layout_width="match_parent"
+<androidx.appcompat.widget.Toolbar
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/toolbar"
+    android:elevation="4dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorPrimary"
+    android:minHeight="?attr/actionBarSize"
+    android:theme="@style/DrawerArrowStyle">
+    <TextView
+        android:id="@+id/toolbarTitle"
+        style="@style/TextAppearance.AppCompat.Title"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="@style/DrawerArrowStyle">
-
-
-        <TextView
-            style="@style/TextAppearance.AppCompat.Title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@{title}"
-            android:textSize="20sp"
-            android:ellipsize="end"
-            android:maxLines="1" />
-
-
-    </androidx.appcompat.widget.Toolbar>
-
-</layout>
+        android:layout_gravity="center"
+        android:textSize="20sp"
+        android:ellipsize="end"
+        android:maxLines="1" />
+</androidx.appcompat.widget.Toolbar>

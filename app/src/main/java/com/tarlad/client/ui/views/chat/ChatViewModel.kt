@@ -35,12 +35,12 @@ class ChatViewModel(
 
     val title = MutableLiveData<String>()
 
-    val image = MutableLiveData<String>()
+    val image = MutableLiveData<String>("")
 
     val isEdit = MutableLiveData<Boolean>(false)
 
     val message = MutableLiveData<String>()
-    val editMessage = MutableLiveData<Message>()
+    val editMessage = MutableLiveData<Message?>(null)
     var chatId: Long = -1
 
     init {

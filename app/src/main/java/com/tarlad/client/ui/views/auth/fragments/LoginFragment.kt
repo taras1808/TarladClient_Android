@@ -4,10 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import com.tarlad.client.R
 import com.tarlad.client.databinding.FragmentLoginBinding
+import com.tarlad.client.helpers.bindText
 import com.tarlad.client.ui.views.auth.AuthViewModel
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
@@ -19,11 +18,20 @@ class LoginFragment: Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding: FragmentLoginBinding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
-        binding.vm = vm
-        binding.lifecycleOwner = this
+            FragmentLoginBinding.inflate(inflater, container, false)
+
+        binding.registerBtn.setOnClickListener {
+            vm.switchToRegistration()
+        }
+        binding.loginBtn.setOnClickListener {
+            vm.login()
+        }
+
+        binding.editEmail.bindText(this, vm.loginEmail)
+        binding.editPassword.bindText(this, vm.loginPassword)
+
         return binding.root
     }
 }

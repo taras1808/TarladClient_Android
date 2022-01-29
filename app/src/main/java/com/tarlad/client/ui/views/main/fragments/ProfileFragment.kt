@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -19,23 +18,21 @@ import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.FileProvider
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.tarlad.client.R
 import com.tarlad.client.databinding.FragmentProfileBinding
+import com.tarlad.client.databinding.SheetLayoutBinding
 import com.tarlad.client.enums.ImagePicker
 import com.tarlad.client.helpers.createImageFile
 import com.tarlad.client.helpers.encodeImage
 import com.tarlad.client.helpers.getFileExtension
+import com.tarlad.client.helpers.loadImage
 import com.tarlad.client.ui.views.main.MainViewModel
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import kotlinx.android.synthetic.main.sheet_layout.view.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import java.io.File
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.*
 
 
 class ProfileFragment : Fragment() {
@@ -44,23 +41,30 @@ class ProfileFragment : Fragment() {
 
     lateinit var binding: FragmentProfileBinding
 
-    val disposable = CompositeDisposable()
+    private val disposable = CompositeDisposable()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_profile, container, false)
-        binding.vm = vm
-        binding.lifecycleOwner = this
+    ): View {
+        binding = FragmentProfileBinding.inflate(inflater, container, false)
+
+        vm.fullName.observe(viewLifecycleOwner) {
+            binding.fullName.text = it
+        }
+        vm.imageUrl.observe(viewLifecycleOwner) {
+            loadImage(binding.imageView, it)
+        }
         initImagePicker(container)
         return binding.root
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        disposable.add(vm.loadProfile())
+        val dispose = vm.loadProfile()
+        if (dispose != null)
+            disposable.add(dispose)
     }
 
     override fun onDetach() {
@@ -80,12 +84,8 @@ class ProfileFragment : Fragment() {
         binding.imageView.setOnLongClickListener {
 
             val bottomSheetDialog = BottomSheetDialog(requireContext())
-            val bottomSheetView = layoutInflater.inflate(
-                R.layout.sheet_layout,
-                container,
-                false
-            )
-            bottomSheetDialog.setContentView(bottomSheetView)
+            val bottomSheetView = SheetLayoutBinding.inflate(layoutInflater, container, false)
+            bottomSheetDialog.setContentView(bottomSheetView.root)
 
             bottomSheetView.take.setOnTouchListener(touch)
             bottomSheetView.select.setOnTouchListener(touch)
@@ -145,6 +145,7 @@ class ProfileFragment : Fragment() {
 
     private lateinit var currentPhotoPath: String
 
+    @SuppressLint("QueryPermissionsNeeded")
     private fun dispatchTakePictureIntent() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             takePictureIntent.resolveActivity(requireActivity().packageManager)?.also {

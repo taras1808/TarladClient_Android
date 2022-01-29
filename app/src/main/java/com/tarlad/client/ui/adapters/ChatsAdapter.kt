@@ -1,8 +1,11 @@
 package com.tarlad.client.ui.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.tarlad.client.R
 import com.tarlad.client.databinding.ItemChatBinding
 import com.tarlad.client.helpers.getTitle
 import com.tarlad.client.models.db.Chat
@@ -91,23 +94,36 @@ class ChatsAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(message: String, title: String, imageUrlBack: String?, imageUrlFront: String?, action: () -> Unit) {
-            binding.imageUrl = ""
-            binding.message = message
-            binding.title = title
-            binding.imageUrlBack = imageUrlBack
-            binding.imageUrlFront = imageUrlFront
+            Glide.with(binding.avatarBack)
+                .load(imageUrlBack)
+                .placeholder(R.drawable.ic_baseline_person_24)
+                .error(R.drawable.ic_baseline_person_24)
+                .into(binding.avatarBack)
+            Glide.with(binding.avatarFront)
+                .load(imageUrlFront)
+                .placeholder(R.drawable.ic_baseline_person_24)
+                .error(R.drawable.ic_baseline_person_24)
+                .into(binding.avatarFront)
+            binding.avatarBack.visibility = View.VISIBLE
+            binding.avatarFront.visibility = View.VISIBLE
+            binding.avatar.visibility = View.GONE
+            binding.message.text = message
+            binding.title.text = title
             binding.root.setOnClickListener { action() }
-            binding.executePendingBindings()
         }
 
         fun bind(message: String, title: String, imageUrl: String?, action: () -> Unit) {
-            binding.imageUrlBack = ""
-            binding.imageUrlFront = ""
-            binding.message = message
-            binding.title = title
-            binding.imageUrl = imageUrl
+            Glide.with(binding.avatar)
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_baseline_person_24)
+                .error(R.drawable.ic_baseline_person_24)
+                .into(binding.avatar)
+            binding.avatarBack.visibility = View.GONE
+            binding.avatarFront.visibility = View.GONE
+            binding.avatar.visibility = View.VISIBLE
+            binding.message.text = message
+            binding.title.text = title
             binding.root.setOnClickListener { action() }
-            binding.executePendingBindings()
         }
     }
 }

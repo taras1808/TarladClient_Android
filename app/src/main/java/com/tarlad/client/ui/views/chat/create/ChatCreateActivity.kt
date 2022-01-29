@@ -1,5 +1,6 @@
 package com.tarlad.client.ui.views.chat.create
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -7,38 +8,35 @@ import android.view.MenuItem
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tarlad.client.R
 import com.tarlad.client.databinding.ActivityChatCreateBinding
+import com.tarlad.client.helpers.bindText
 import com.tarlad.client.ui.adapters.UsersAdapter
 import com.tarlad.client.ui.views.chat.ChatActivity
-import kotlinx.android.synthetic.main.activity_chat_create.*
-import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
 
 
 class ChatCreateActivity : AppCompatActivity() {
 
-    private val vm by viewModel<ChatCreateViewModel> { parametersOf(lifecycleScope.id) }
+    private val vm by viewModel<ChatCreateViewModel>()
     private val adapter = UsersAdapter(arrayListOf()) { invalidateOptionsMenu() }
     private lateinit var binding: ActivityChatCreateBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_chat_create)
-        binding.vm = vm
-        binding.lifecycleOwner = this
+        binding = ActivityChatCreateBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         setSupportActionBar(binding.toolbarInclude.toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_HOME_AS_UP
 
-        vm.toolbarTitle.value = getString(R.string.new_chat)
+        binding.search.bindText(this, vm.search)
+        binding.toolbarInclude.toolbarTitle.text = getString(R.string.new_chat)
 
         initRecyclerView()
 
@@ -95,6 +93,7 @@ class ChatCreateActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun observeUsers() {
         vm.users.observe(this , Observer {
             adapter.users.removeAll(it)
@@ -118,7 +117,7 @@ class ChatCreateActivity : AppCompatActivity() {
     private fun observeError() {
         vm.error.observe(this, Observer {
             if (!it.isNullOrEmpty()) {
-                val snack = Snackbar.make(create_chat_container, it, Snackbar.LENGTH_LONG)
+                val snack = Snackbar.make(binding.createChatContainer, it, Snackbar.LENGTH_LONG)
                 snack.setBackgroundTint(
                     ContextCompat.getColor(applicationContext, R.color.colorError)
                 )

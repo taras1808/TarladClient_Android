@@ -26,7 +26,8 @@
         tools:targetApi="m">
         <activity
             android:name=".ui.views.launcher.LauncherActivity"
-            android:theme="@style/AppTheme.Launcher">
+            android:theme="@style/AppTheme.Launcher"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -65,7 +66,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.tarlad.android.fileprovider"
+            android:authorities="com.tarlad.android.fireproof"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"

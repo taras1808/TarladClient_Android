@@ -15,6 +15,7 @@ import com.tarlad.client.repos.*
 import com.tarlad.client.states.AppStates
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.Disposable
+import io.socket.client.Ack
 import io.socket.client.Socket
 import java.util.*
 import kotlin.collections.ArrayList
@@ -40,7 +41,7 @@ class MainViewModel(
     val chatLists: HashMap<Long, List<Long>> = hashMapOf()
 
     val fullName = MutableLiveData<String>()
-    val imageUrl = MutableLiveData<String>()
+    val imageUrl = MutableLiveData<String?>()
 
     val error = MutableLiveData<String>()
     val messagesLiveData = MutableLiveData<ArrayList<Pair<Chats, List<Message>>>>(arrayListOf())
@@ -60,7 +61,9 @@ class MainViewModel(
                     messagesLiveData.value!!.add(it)
                     messagesLiveData.value = messagesLiveData.value
                 },
-                { error.value = it.toString() }
+                {
+                    error.value = it.toString()
+                }
             )
     }
 

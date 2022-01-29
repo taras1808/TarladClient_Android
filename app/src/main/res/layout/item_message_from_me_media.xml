@@ -1,78 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:bind="http://schemas.android.com/apk/res-auto"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
-    <data>
-        <import type="android.view.View"/>
-        <variable
-            name="message"
-            type="com.tarlad.client.models.db.Message"/>
-        <variable
-            name="showDateTime"
-            type="java.lang.Boolean"/>
-        <variable
-            name="withMargin"
-            type="java.lang.Boolean"/>
-        <variable
-            name="showNickname"
-            type="java.lang.Boolean"/>
-    </data>
-    <LinearLayout
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/message_block_from_media"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="end"
+    android:orientation="vertical"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
+
+    <TextView
+        android:id="@+id/datetime_from"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="end"
-        android:orientation="vertical"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        app:withMargin="@{withMargin}"
-        app:showDateTime="@{showDateTime}"
-        app:showNickname="@{showNickname}">
+        android:textAlignment="center"
+        android:textColor="@color/editText"
+        android:layout_marginBottom="24dp"
+        android:layout_marginTop="24dp"
+        android:maxLines="1"/>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/message_background_from">
+
+        <ImageView
+            android:id="@+id/icon"
+            android:adjustViewBounds="true"
+            android:maxWidth="320dp"
+            android:minWidth="200dp"
+            android:minHeight="120dp"
+            android:maxHeight="540dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAlignment="center"
-            android:textColor="@color/editText"
-            android:layout_marginBottom="24dp"
-            android:layout_marginTop="24dp"
-            android:maxLines="1"
-            android:visibility="@{showDateTime ? View.VISIBLE : View.GONE}"
-            app:datetime="@{message.time}"/>
-
-        <RelativeLayout
+            android:id="@+id/time_from"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/message_background_from">
+            android:layout_gravity="bottom"
+            android:layout_alignEnd="@id/icon"
+            android:layout_alignBottom="@id/icon"
+            android:maxWidth="320dp"
+            android:maxLines="1"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:textColor="@color/grayLight"
+            android:textSize="12sp"/>
 
-            <ImageView
-                android:id="@+id/icon"
-                app:url="@{message.data}"
-                android:adjustViewBounds="true"
-                android:maxWidth="320dp"
-                android:minWidth="200dp"
-                android:minHeight="120dp"
-                android:maxHeight="540dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+    </RelativeLayout>
 
-            <TextView
-                android:id="@+id/time_from"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_alignEnd="@id/icon"
-                android:layout_alignBottom="@id/icon"
-                android:maxWidth="320dp"
-                android:maxLines="1"
-                android:paddingEnd="16dp"
-                android:paddingBottom="8dp"
-                android:textColor="@color/grayLight"
-                android:textSize="12sp"
-                app:time="@{message.time}"/>
-
-        </RelativeLayout>
-
-    </LinearLayout>
-</layout>
+</LinearLayout>

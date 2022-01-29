@@ -1,75 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/SelectableItemBackground"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="16dp">
 
-    <data>
-        <variable
-            name="user"
-            type="com.tarlad.client.models.db.User"/>
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imageURL"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:civ_border_width="2dp"
+        app:civ_border_color="@color/white"
+        app:civ_circle_background_color="@color/white"/>
 
-        <variable
-            name="selected"
-            type="java.lang.Boolean"/>
-
-    </data>
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        style="@style/SelectableItemBackground"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/user_data_container"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="16dp">
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/imageURL"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:url="@{user.imageURL}"
-            app:civ_border_width="2dp"
-            app:civ_border_color="@color/white"
-            app:civ_circle_background_color="@color/white"/>
-
-        <LinearLayout
-            android:id="@+id/user_data_container"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/nickname"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="@color/black"
+            android:textSize="18sp"/>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:text="@{user.nickname}"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:textColor="@color/editText"
-                android:textSize="18sp"
-                android:text="@{user.name + ' ' + user.surname}"/>
-
-        </LinearLayout>
-
-        <CheckBox
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/full_name"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@null"
-            android:checked="@{selected}"
-            android:clickable="false"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:theme="@style/SelectableItemCheckBox"
-            tools:ignore="MissingPrefix" />
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="@color/editText"
+            android:textSize="18sp"/>
 
     </LinearLayout>
-</layout>
+
+    <CheckBox
+        android:id="@+id/checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:clickable="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:theme="@style/SelectableItemCheckBox"
+        tools:ignore="MissingPrefix" />
+
+</LinearLayout>

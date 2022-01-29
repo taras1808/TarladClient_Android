@@ -15,10 +15,12 @@ import com.tarlad.client.databinding.ItemMessageFromMeBinding
 import com.tarlad.client.databinding.ItemMessageFromMeMediaBinding
 import com.tarlad.client.databinding.ItemMessageToMeBinding
 import com.tarlad.client.databinding.ItemMessageToMeMediaBinding
+import com.tarlad.client.helpers.adaptDateTimeSeparator
+import com.tarlad.client.helpers.adaptMargins
+import com.tarlad.client.helpers.adaptTime
+import com.tarlad.client.helpers.loadImage
 import com.tarlad.client.models.db.Message
 import com.tarlad.client.models.db.User
-import java.lang.Exception
-import java.util.*
 
 // TODO change listeners to action
 class MessagesAdapter(
@@ -248,11 +250,11 @@ class MessagesAdapter(
                 }
             else
                 binding.messageBlock.setOnCreateContextMenuListener { menu, _, _ -> menu.clear() }
-            binding.message = message
-            binding.showDateTime = showDateTime
-            binding.withMargin = withMargin
-            binding.showNickname = showNickname
-            binding.executePendingBindings()
+            binding.messageFrom.text = message.data
+            binding.datetimeFrom.visibility = if (showDateTime) View.VISIBLE else View.GONE
+            adaptMargins(binding.messageBlockFrom, withMargin, showDateTime, showNickname)
+            adaptDateTimeSeparator(binding.datetimeFrom, message.time)
+            adaptTime(binding.timeFrom, message.time)
         }
     }
 
@@ -268,17 +270,6 @@ class MessagesAdapter(
             withMargin: Boolean,
             showNickname: Boolean
         ) {
-            binding.message = message
-            binding.showImage = showImage
-            binding.showDateTime = showDateTime
-            binding.withMargin = withMargin
-            binding.showNickname = showNickname
-            binding.imageUrl = users.find { e -> e.id == message.userId }?.imageURL
-            if (users.isNotEmpty())
-                binding.setNickname(users.find { user -> user.id == message.userId }?.nickname)
-            else
-                binding.setNickname("")
-
             binding.messageBlockTo.setOnCreateContextMenuListener { menu, _, _ ->
                 MenuInflater(binding.root.context).inflate(R.menu.context_menu_messages_to, menu)
                 menu.findItem(R.id.action_copy_message).setOnMenuItemClickListener {
@@ -288,8 +279,18 @@ class MessagesAdapter(
                     true
                 }
             }
-
-            binding.executePendingBindings()
+            binding.imageView.visibility = if (showImage) View.VISIBLE else View.INVISIBLE
+            binding.nickname.visibility = if(showNickname || showDateTime) View.VISIBLE else View.GONE
+            if (users.isNotEmpty())
+                binding.nickname.text = users.find { user -> user.id == message.userId }?.nickname
+            else
+                binding.nickname.text = ""
+            binding.messageTo.text = message.data
+            binding.datetimeTo.visibility = if (showDateTime) View.VISIBLE else View.GONE
+            loadImage(binding.imageView, users.find { e -> e.id == message.userId }?.imageURL)
+            adaptDateTimeSeparator(binding.datetimeTo, message.time)
+            adaptTime(binding.timeTo, message.time)
+            adaptMargins(binding.messageBlockTo, withMargin, showDateTime, showNickname)
         }
     }
 
@@ -318,16 +319,14 @@ class MessagesAdapter(
                 }
             else
                 binding.root.setOnCreateContextMenuListener { menu, _, _ -> menu.clear() }
-
             binding.icon.setOnClickListener {
                 clickImageListener?.let { it(message.data) }
             }
-
-            binding.message = message
-            binding.showDateTime = showDateTime
-            binding.withMargin = withMargin
-            binding.showNickname = showNickname
-            binding.executePendingBindings()
+            binding.datetimeFrom.visibility = if (showDateTime) View.VISIBLE else View.GONE
+            loadImage(binding.icon, message.data)
+            adaptDateTimeSeparator(binding.datetimeFrom, message.time)
+            adaptTime(binding.timeFrom, message.time)
+            adaptMargins(binding.messageBlockFromMedia, withMargin, showDateTime, showNickname)
         }
     }
 
@@ -344,22 +343,22 @@ class MessagesAdapter(
             withMargin: Boolean,
             showNickname: Boolean
         ) {
-            binding.message = message
-            binding.showImage = showImage
-            binding.showDateTime = showDateTime
-            binding.withMargin = withMargin
-            binding.showNickname = showNickname
-            binding.imageUrl = users.find { e -> e.id == message.userId }?.imageURL
+            binding.nickname.visibility =
+                if (showNickname || showDateTime) View.VISIBLE else View.GONE
             if (users.isNotEmpty())
-                binding.nickname = users.find { user -> user.id == message.userId }?.nickname
+                binding.nickname.text = users.find { user -> user.id == message.userId }?.nickname
             else
-                binding.nickname = ""
-
+                binding.nickname.text = ""
             binding.icon.setOnClickListener {
                 clickImageListener?.let { it(message.data) }
             }
-
-            binding.executePendingBindings()
+            binding.datetimeTo.visibility = if (showDateTime) View.VISIBLE else View.GONE
+            binding.avatar.visibility = if (showImage) View.VISIBLE else View.INVISIBLE
+            loadImage(binding.avatar, users.find { e -> e.id == message.userId }?.imageURL)
+            loadImage(binding.icon, message.data)
+            adaptDateTimeSeparator(binding.datetimeTo, message.time)
+            adaptTime(binding.timeTo, message.time)
+            adaptMargins(binding.messageBlockToMedia, withMargin, showDateTime, showNickname)
         }
     }
 }

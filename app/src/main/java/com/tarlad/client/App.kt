@@ -26,6 +26,6 @@ class App : Application() {
         }
 
 
-        startService(Intent(this, MessagingService::class.java))
+//        startService(Intent(this, MessagingService::class.java))
     }
 }

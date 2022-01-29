@@ -1,66 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:padding="64dp"
+    android:orientation="vertical">
 
-    <data>
-        <variable
-            name="vm"
-            type="com.tarlad.client.ui.views.auth.AuthViewModel" />
-    </data>
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <EditText
+        android:id="@+id/edit_email"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:padding="64dp"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_text"
+        android:ems="10"
+        android:hint="@string/email"
+        android:inputType="textEmailAddress"
+        android:textColor="@color/black"
+        android:textColorHint="@color/editText" />
 
-        <EditText
-            android:id="@+id/edit_email"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/edit_text"
-            android:ems="10"
-            android:text="@={vm.loginEmail}"
-            android:hint="@string/email"
-            android:inputType="textEmailAddress"
-            android:textColor="@color/black"
-            android:textColorHint="@color/editText" />
+    <EditText
+        android:id="@+id/edit_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/edit_text"
+        android:ems="10"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        android:textColor="@color/black"
+        android:textColorHint="@color/editText" />
 
-        <EditText
-            android:id="@+id/edit_password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/edit_text"
-            android:ems="10"
-            android:text="@={vm.loginPassword}"
-            android:hint="@string/password"
-            android:inputType="textPassword"
-            android:textColor="@color/black"
-            android:textColorHint="@color/editText" />
+    <Button
+        android:id="@+id/login_btn"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/button"
+        android:text="@string/login"
+        android:textColor="@color/black"/>
 
-        <Button
-            android:id="@+id/login_btn"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:background="@drawable/button"
-            android:text="@string/login"
-            android:textColor="@color/black"
-            android:onClick="@{(v) -> vm.login()}"/>
+    <TextView
+        android:id="@+id/register_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="@string/registration"
+        android:textAlignment="center"
+        android:textColor="@color/blue"
+        android:textSize="18sp"/>
 
-        <TextView
-            android:id="@+id/register_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="@string/registration"
-            android:textAlignment="center"
-            android:textColor="@color/blue"
-            android:textSize="18sp"
-            android:onClick="@{(v) -> vm.switchToRegistration()}"/>
-
-    </LinearLayout>
-
-</layout>
+</LinearLayout>

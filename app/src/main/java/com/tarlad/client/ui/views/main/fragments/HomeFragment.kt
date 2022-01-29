@@ -1,12 +1,12 @@
 package com.tarlad.client.ui.views.main.fragments
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,7 +17,6 @@ import com.tarlad.client.ui.adapters.ChatsAdapter
 import com.tarlad.client.enums.Chats
 import com.tarlad.client.ui.views.chat.ChatActivity
 import com.tarlad.client.ui.views.main.MainViewModel
-import kotlinx.android.synthetic.main.fragment_home.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
 class HomeFragment : Fragment() {
@@ -31,10 +30,8 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false)
-        binding.vm = vm
-        binding.lifecycleOwner = this
+    ): View {
+        binding = FragmentHomeBinding.inflate(inflater, container, false)
 
         initRecyclerView()
 
@@ -57,7 +54,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun observeMessages() {
-        vm.messagesLiveData.observe(viewLifecycleOwner, { list ->
+        vm.messagesLiveData.observe(viewLifecycleOwner) { list ->
             list.forEach { pair ->
                 val action = pair.first
                 val messages = pair.second
@@ -77,36 +74,39 @@ class HomeFragment : Fragment() {
                 }
             }
             vm.messagesLiveData.value!!.clear()
-        })
+        }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun observeUsers() {
-        vm.usersLiveDate.observe(viewLifecycleOwner, {
+        vm.usersLiveDate.observe(viewLifecycleOwner) {
             vm.users.removeAll { e -> e.id == it.id }
             vm.users.add(it)
             adapter.notifyDataSetChanged()
-        })
+        }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun observeChats() {
-        vm.chatsLiveDate.observe(viewLifecycleOwner, {
+        vm.chatsLiveDate.observe(viewLifecycleOwner) {
             vm.chats.removeAll { e -> e.id == it.id }
             vm.chats.add(it)
             if (!vm.chatLists.containsKey(it.id)) {
                 vm.getChatLists(it.id)
             }
             adapter.notifyDataSetChanged()
-        })
+        }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun observeChatLists() {
-        vm.chatListsLiveDate.observe(viewLifecycleOwner, {
+        vm.chatListsLiveDate.observe(viewLifecycleOwner) {
             vm.chatLists.remove(it.first)
             vm.users.removeAll(it.second)
             vm.users.addAll(it.second)
             vm.chatLists[it.first] = it.second.map { e -> e.id }
             adapter.notifyDataSetChanged()
-        })
+        }
     }
 
     private fun observeOpenChat() {
@@ -125,8 +125,8 @@ class HomeFragment : Fragment() {
         binding.chatsRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                val totalItemCount = chats_recycler.layoutManager!!.itemCount
-                val layoutManager = chats_recycler.layoutManager as LinearLayoutManager
+                val totalItemCount = binding.chatsRecycler.layoutManager!!.itemCount
+                val layoutManager = binding.chatsRecycler.layoutManager as LinearLayoutManager
                 val lastVisibleItem = layoutManager.findLastVisibleItemPosition()
                 if (totalItemCount <= lastVisibleItem + 5)
                     vm.getMessages()

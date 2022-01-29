@@ -22,8 +22,6 @@ class ChatCreateViewModel(
     private val appSession: AppSession
 ): AndroidViewModel(application) {
 
-    val toolbarTitle = MutableLiveData<String>()
-
     val search = MutableLiveData<String>()
 
     val complete = MutableLiveData<Boolean>(false)

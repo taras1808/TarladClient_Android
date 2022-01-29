@@ -9,8 +9,6 @@ import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import com.tarlad.client.R
 import com.tarlad.client.databinding.ActivityMainBinding
@@ -20,15 +18,15 @@ import com.tarlad.client.ui.views.auth.AuthActivity
 import com.tarlad.client.ui.views.main.fragments.HomeFragment
 import com.tarlad.client.ui.views.main.fragments.ProfileFragment
 import com.tarlad.client.ui.views.settings.SettingsActivity
-import org.koin.androidx.scope.lifecycleScope
+import io.socket.client.Socket
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
 import java.lang.IllegalArgumentException
 
 
 class MainActivity : AppCompatActivity() {
 
-    private val vm: MainViewModel by viewModel { parametersOf(lifecycleScope.id) }
+    private val vm: MainViewModel by viewModel()
     private val homeFragment: HomeFragment = HomeFragment()
     private val profileFragment: ProfileFragment = ProfileFragment()
     private lateinit var binding: ActivityMainBinding
@@ -36,12 +34,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        binding.vm = vm
-        binding.lifecycleOwner = this
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         setSupportActionBar(binding.toolbarInclude.toolbar)
         supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
+
+        vm.toolbarTitle.observe(this) {
+            binding.toolbarInclude.toolbarTitle.text = it
+        }
+
+        binding.bottomNavigationView.setOnItemSelectedListener(vm::onNavigationClick)
 
         observeError()
         observeAppState()
@@ -74,11 +77,11 @@ class MainActivity : AppCompatActivity() {
             .setTitle(getString(R.string.logout))
             .setMessage(getString(R.string.do_you_really_want_to_logout))
             .setIcon(android.R.drawable.ic_dialog_alert)
-            .setPositiveButton(android.R.string.yes) { _, _ ->
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 vm.logout()
                 Toast.makeText(this, getString(R.string.bye), Toast.LENGTH_SHORT).show()
             }
-            .setNegativeButton(android.R.string.no, null).show()
+            .setNegativeButton(android.R.string.cancel, null).show()
     }
 
     private fun openSettingsActivity() {
@@ -92,20 +95,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observeAppState() {
-        vm.appSession.state.observe(this, Observer {
+        vm.appSession.state.observe(this) {
             when (it) {
                 AppStates.NotAuthenticated -> {
                     val intent = Intent(this, AuthActivity::class.java)
                     startActivity(intent)
                     finish()
                 }
-                else -> { }
+                else -> {}
             }
-        })
+        }
     }
 
     private fun observeFragment() {
-        vm.fragment.observe(this, Observer {
+        vm.fragment.observe(this) {
             val selectedFragment = when (it) {
                 0 -> homeFragment
                 1 -> profileFragment
@@ -115,16 +118,16 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.container, selectedFragment)
                 .commitNow()
             invalidateOptionsMenu()
-        })
+        }
     }
 
     private fun observeError() {
-        vm.error.observe(this, Observer {
+        vm.error.observe(this) {
             val snack = Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG)
             val color = ContextCompat.getColor(applicationContext, R.color.colorError)
             snack.setBackgroundTint(color)
             snack.show()
-        })
+        }
     }
 
     override fun onBackPressed() {

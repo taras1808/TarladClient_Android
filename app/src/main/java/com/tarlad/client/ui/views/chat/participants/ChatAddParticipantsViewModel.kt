@@ -19,8 +19,6 @@ class ChatAddParticipantsViewModel(
     private val chatsRepo: ChatsRepo
 ): AndroidViewModel(application) {
 
-    val title = MutableLiveData<String>()
-
     val search = MutableLiveData<String>()
 
     val complete = MutableLiveData<Boolean>(false)

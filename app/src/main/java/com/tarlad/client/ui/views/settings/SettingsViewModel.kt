@@ -16,8 +16,6 @@ class SettingsViewModel(
     private val usersRepo: UsersRepo
 ): ViewModel() {
 
-    val toolbarTitle = MutableLiveData<String>()
-
     val error = MutableLiveData<String>()
 
     val name = MutableLiveData<String>()

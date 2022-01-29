@@ -1,9 +1,11 @@
 package com.tarlad.client.ui.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.tarlad.client.databinding.ItemChatCreateBinding
+import com.tarlad.client.helpers.loadImage
 import com.tarlad.client.models.db.User
 
 // TODO change listeners to action
@@ -36,17 +38,18 @@ class UsersAdapter(
 
         var selected: Boolean = false
 
+        @SuppressLint("SetTextI18n")
         fun bind(user: User, selected: Boolean) {
-            binding.user = user
-            binding.selected = selected
+            loadImage(binding.imageURL, user.imageURL)
+            binding.nickname.text = user.nickname
+            binding.fullName.text = "${user.name} ${user.surname}"
             this.selected = selected
+            binding.checkbox.isSelected = selected
             binding.root.setOnClickListener {
                 this.selected = !this.selected
-                binding.selected = this.selected
+                binding.checkbox.isSelected = selected
                 listener(user)
-                binding.executePendingBindings()
             }
-            binding.executePendingBindings()
         }
     }
 }
